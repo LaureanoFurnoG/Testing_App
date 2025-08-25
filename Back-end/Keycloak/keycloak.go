@@ -62,13 +62,13 @@ type CreateUserParams struct {
 	Password string
 }
 
-func (c *ClientKeycloak) CreateUser(ctx context.Context, params CreateUserParams) error {
+func (c *ClientKeycloak) CreateUser(ctx context.Context, params CreateUserParams) (userId string, error error) {
 	//login in superusuario
 
 	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	newUser := gocloak.User{
@@ -81,13 +81,13 @@ func (c *ClientKeycloak) CreateUser(ctx context.Context, params CreateUserParams
 
 	userID, err := c.kc.CreateUser(ctx, jwt.AccessToken, c.realm, newUser)
 	if err != nil {
-		return err
+		return "", err
 	}
 	err = c.kc.SetPassword(ctx, jwt.AccessToken, userID, c.realm, params.Password, false)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return userID, nil
 }
 
 type UserInfo struct {
@@ -132,10 +132,10 @@ func generateNumbers() string {
 	return fmt.Sprintf("%s", n)
 }
 
-func (c *ClientKeycloak) CreateGroup(ctx context.Context, params CreateGroupParams, accessToken string) error {
+func (c *ClientKeycloak) CreateGroup(ctx context.Context, params CreateGroupParams, accessToken string) (groupID string, error error) {
 	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
 	if err != nil {
-		return err
+		return "", err
 	}
 	generateNameGroup := fmt.Sprintf("%s-%s", params.Name, generateNumbers())
 
@@ -149,29 +149,43 @@ func (c *ClientKeycloak) CreateGroup(ctx context.Context, params CreateGroupPara
 	groupCreateID, err := c.kc.CreateGroup(ctx, jwt.AccessToken, c.realm, newGroup)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	userInfo, err := c.kc.GetUserInfo(ctx, accessToken, c.realm)
 
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	if userInfo.Sub == nil {
-		return fmt.Errorf("userInfo.Sub is nil")
+		return "", fmt.Errorf("userInfo.Sub is nil")
 	}
 
 	err = c.kc.AddUserToGroup(ctx, jwt.AccessToken, c.realm, *userInfo.Sub, groupCreateID)
 
 	if err != nil {
+		return "", err
+	}
+
+	return groupCreateID, nil
+}
+
+func (c *ClientKeycloak) DeleteGroup(ctx context.Context, groupID string) error {
+
+	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
+	if err != nil {
+		return err
+	}
+
+	err = c.kc.DeleteGroup(ctx, jwt.AccessToken, c.realm, groupID)
+
+	if err != nil{
 		return err
 	}
 
 	return nil
 }
-
-func (c *ClientKeycloak) DeleteGroup(ctx context.Context)
 
 func (c *ClientKeycloak) RefreshToken(ctx context.Context, refreshToken string) (*gocloak.JWT, error) {
 

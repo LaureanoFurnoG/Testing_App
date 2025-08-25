@@ -2,7 +2,9 @@ package controllers
 
 import (
 	keycloak "Go-API-T/Keycloak"
+	"Go-API-T/initializers"
 	"Go-API-T/middlewere"
+	"Go-API-T/models"
 	//"Go-API-T/services"
 	//"crypto/rand"
 	//"fmt"
@@ -20,6 +22,8 @@ func GroupsController(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.M
 	group := rg.Group("/group")
 
 	group.POST("/createGroup", mw.RequireAuth(), handler.createGroup)
+	group.DELETE("/deleteGroup", mw.RequireAuth(), handler.deleteGroup)
+
 }
 
 func (h *HandlerAPI) createGroup(c *gin.Context) {
@@ -36,7 +40,16 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 		return
 	}
 
-	err := h.clientKC.CreateGroup(c.Request.Context(), keycloak.CreateGroupParams{Name: jsonData.Name}, accessToken)
+	groupID, err := h.clientKC.CreateGroup(c.Request.Context(), keycloak.CreateGroupParams{Name: jsonData.Name}, accessToken)
+
+	group := models.Groups{KeycloakID: groupID}
+
+	createG := initializers.DB.Create(&group)
+
+	if createG.Error != nil {
+		c.JSON(400, gin.H{"error": createG.Error})
+		return
+	}
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -44,12 +57,34 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 		})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Group created successfully",
 	})
 }
 
-func (h *HandlerAPI) deleteGroup(c *gin.Context){
-	
+func (h *HandlerAPI) deleteGroup(c *gin.Context) {
+	var jsonData struct {
+		GroupID string
+	}
+
+	if c.ShouldBindJSON(&jsonData) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to read body",
+		})
+		return
+	}
+
+	err := h.clientKC.DeleteGroup(c.Request.Context(), jsonData.GroupID)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{
+		"message": "Group deleted successfully",
+	})
 }
