@@ -1,0 +1,61 @@
+.SideMenu-activeButton {
+  cursor: pointer;
+  height: 6%;
+  padding-left: 24px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(216, 214, 214, 0.75);
+}
+.disableMenu-label {
+  padding-top: 10px;
+  padding-left: 3px;
+}
+.dataUser-sideMenu {
+  width: 79px;
+  position: absolute;
+  bottom: 0;
+  padding: 16px;
+  border-top: 1px solid rgba(216, 214, 214, 0.75);
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.sideMenu {
+  background-color: white;
+  border-right: 1px solid rgba(216, 214, 214, 0.75);
+}
+
+.sideMenu.collapsed .dataUser-sideMenu {
+  width: 80px;
+}
+
+.sideMenu:not(.collapsed) .dataUser-sideMenu {
+  width: 240px;
+}
+
+@media (max-width: 402px) {
+  .sideMenu {
+    position: fixed;
+  }
+  .ContainerContent-Page {
+    padding-top: 60px !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+  .sideMenu.collapsed {
+    position: fixed;
+    width: 100vw !important;
+  }
+  .sideMenu:not(.collapsed) {
+    height: 100% !important;
+    background-color: white;
+    border-right: 1px solid rgb(240, 240, 240);
+  }
+  .sideMenu .ant-menu-vertical {
+    display: none;
+  }
+  .sideMenu.collapsed .dataUser-sideMenu {
+    display: none;
+  }
+}
