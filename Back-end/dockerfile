@@ -1,0 +1,8 @@
+FROM quay.io/keycloak/keycloak:26.3.2
+
+COPY . .
+COPY .env .env
+
+EXPOSE 8080
+
+ENTRYPOINT ["kc.sh", "start-dev"]
