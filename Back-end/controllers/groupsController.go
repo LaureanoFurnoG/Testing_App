@@ -5,6 +5,9 @@ import (
 	"Go-API-T/initializers"
 	"Go-API-T/middlewere"
 	"Go-API-T/models"
+	//"fmt"
+	//"strings"
+
 	//"Go-API-T/services"
 	//"crypto/rand"
 	//"fmt"
@@ -30,8 +33,9 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 	var jsonData struct {
 		Name string
 	}
-
-	accessToken := c.Request.Header.Get("Access-Token")
+	accessToken := c.Request.Header.Get("Access-Token") //temporal
+	//accessToken := c.GetHeader("Authorization")
+	//tokenString := strings.TrimPrefix(accessToken, "Bearer ")
 
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -42,6 +46,13 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 
 	groupID, err := h.clientKC.CreateGroup(c.Request.Context(), keycloak.CreateGroupParams{Name: jsonData.Name}, accessToken)
 
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
 	group := models.Groups{KeycloakID: groupID}
 
 	createG := initializers.DB.Create(&group)
@@ -50,10 +61,32 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 		c.JSON(400, gin.H{"error": createG.Error})
 		return
 	}
+	var userF models.Users
+	userKeycloak, err := h.clientKC.UserInfo(c.Request.Context(), accessToken)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
+		})
+		return
+	}
+
+	userFind := initializers.DB.First(&userF, "keycloak_id = ?", userKeycloak.ID)
+
+	if userFind.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User Missing",
+		})
+		return
+	}
+
+	groupRelation := models.GroupsRelation{Idgroup: group.ID, Iduser: userF.ID, Accepted: true}
+
+	createRelation := initializers.DB.Create(&groupRelation)
+
+	if createRelation.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User Missing",
 		})
 		return
 	}
@@ -65,7 +98,7 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 
 func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 	var jsonData struct {
-		GroupID string
+		GroupID int
 	}
 
 	if c.ShouldBindJSON(&jsonData) != nil {
@@ -74,8 +107,28 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 		})
 		return
 	}
+	var group models.Groups
+	var GroupsRelation models.GroupsRelation
 
-	err := h.clientKC.DeleteGroup(c.Request.Context(), jsonData.GroupID)
+	groupFound := initializers.DB.First(&group, "id = ?", jsonData.GroupID)
+
+	if groupFound.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Group Missing",
+		})
+		return
+	}
+
+	groupRleatioNFound := initializers.DB.First(&GroupsRelation, "idgroup = ?", jsonData.GroupID)
+
+	if groupRleatioNFound.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Group relation Missing",
+		})
+		return
+	}
+
+	err := h.clientKC.DeleteGroup(c.Request.Context(), group.KeycloakID)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -84,7 +137,28 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 		return
 	}
 
+	groupRelationDelete := initializers.DB.Delete(&group, jsonData.GroupID)
+
+	if groupRelationDelete.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Group Missing",
+		})
+		return
+	}
+	groupDelete := initializers.DB.Delete(&GroupsRelation, GroupsRelation.ID)
+
+	if groupDelete.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Group Missing",
+		})
+		return
+	}
+
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Group deleted successfully",
 	})
+}
+
+func (h *HandlerAPI) inviteGroup(c *gin.Context) {
+
 }

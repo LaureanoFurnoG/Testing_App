@@ -5,50 +5,52 @@ import (
 )
 
 type Groups struct {
-	ID         uint `gorm:"primaryKey"`
-	KeycloakID string
+	ID         uint   `gorm:"primaryKey"`
+	KeycloakID string `gorm:"column:keycloak_id"`
 }
 
 type Users struct {
-	ID         uint `gorm:"primaryKey"`
-	KeycloakID string
+	ID         uint   `gorm:"primaryKey"`
+	KeycloakID string `gorm:"column:keycloak_id"`
 }
 
-type Groups_relation struct {
+type GroupsRelation struct { 
 	ID uint `gorm:"primaryKey"`
 
-	idUser uint
-	User   Users `gorm:"foreignKey:idUser;references:ID"`
+	Iduser uint 
+	User   Users `gorm:"foreignKey:Iduser;references:ID"`
 
-	idGroup uint
-	Group   Groups `gorm:"foreignKey:idGroup;references:ID"`
+	Idgroup uint 
+	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
+
+	Accepted bool 
 }
 
-type Backend_tests struct {
+type BackendTests struct {
 	ID uint `gorm:"primaryKey"`
 
-	idGroup uint
-	Group   Groups `gorm:"foreignKey:idGroup;references:ID"`
+	IdGroup uint 
+	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
-	http_type    string
-	url_api      string
-	request_type string
-	request      datatypes.JSON `gorm:"type:json"`
-	response     datatypes.JSON `gorm:"type:json"`
-	header       datatypes.JSON `gorm:"type:json"`
-	token        string
+	Httptype    string
+	Urlapi      string
+	Requesttype string
+	Request     datatypes.JSON `gorm:"type:json"`
+	Response    datatypes.JSON `gorm:"type:json"`
+	Header      datatypes.JSON `gorm:"type:json"`
+	Token       string
 }
 
-type Save_endpoint_result struct {
+type SaveEndpointResult struct {
 	ID uint `gorm:"primaryKey"`
 
-	idGroup uint
-	Group   Groups `gorm:"foreignKey:idGroup;references:ID"`
+	Idgroup uint
+	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
-	idTest uint
-	Backend_tests   Backend_tests `gorm:"foreignKey:idTest;references:ID"`
+	Idtest uint
+	BackendTests BackendTests `gorm:"foreignKey:Idtest;references:ID"`
 
-	test_case_description    string
-	tested_in_frontend      bool
-	Evidence_frontend string
+	Testcasedescription string
+	TestedInfrontend    bool
+	Evidencefrontend    string
 }
