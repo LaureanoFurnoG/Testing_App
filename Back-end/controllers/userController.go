@@ -7,8 +7,8 @@ import (
 	"crypto/rand"
 	"math/big"
 
-	//"Go-API-T/initializers"
-	//"Go-API-T/models"
+	"Go-API-T/initializers"
+	"Go-API-T/models"
 	"fmt"
 
 	//"strings"
@@ -40,7 +40,8 @@ func UserRoutes(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middlew
 
 	//user.POST("/TwoStep", twoStep)
 }
-//define a 
+
+// define a
 type HandlerAPI struct {
 	clientKC *keycloak.ClientKeycloak
 }
@@ -81,7 +82,7 @@ func (h *HandlerAPI) register(c *gin.Context) {
 		Password: jsonData.Password,
 	}
 
-	err := h.clientKC.CreateUser(c.Request.Context(), params)
+	userID, err := h.clientKC.CreateUser(c.Request.Context(), params)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -89,6 +90,16 @@ func (h *HandlerAPI) register(c *gin.Context) {
 		})
 		return
 	}
+
+	user := models.Users{KeycloakID: userID}
+
+	createU := initializers.DB.Create(&user)
+
+	if createU.Error != nil {
+		c.JSON(400, gin.H{"error": createU.Error})
+		return
+	}
+	
 	c.JSON(http.StatusCreated, gin.H{"Message": "User created"})
 }
 
