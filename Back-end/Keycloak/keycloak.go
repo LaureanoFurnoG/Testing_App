@@ -91,7 +91,7 @@ func (c *ClientKeycloak) CreateUser(ctx context.Context, params CreateUserParams
 }
 
 type UserInfo struct {
-	ID string
+	ID       string
 	Username string
 	Email    string
 }
@@ -107,7 +107,7 @@ func (c *ClientKeycloak) UserInfo(ctx context.Context, accessToken string) (*Use
 	}
 
 	userInfo := &UserInfo{}
-	if user.Sub != nil{
+	if user.Sub != nil {
 		userInfo.ID = *user.Sub
 	}
 	if user.Nickname != nil {
@@ -116,6 +116,42 @@ func (c *ClientKeycloak) UserInfo(ctx context.Context, accessToken string) (*Use
 	if user.Email != nil {
 		userInfo.Email = *user.Email
 	}
+	return userInfo, nil
+}
+
+func (c *ClientKeycloak) GetUserInf(ctx context.Context, emailUser string) (*UserInfo, error) {
+	
+	params := gocloak.GetUsersParams{
+		Username: gocloak.StringP(emailUser),
+	}
+
+	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
+	if err != nil{
+		return nil, err
+	}
+
+	user, err := c.kc.GetUsers(ctx, jwt.AccessToken, c.realm, params)
+
+	//fmt.Println(user, emailUser)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if user == nil {
+		return nil, fmt.Errorf("User info not found")
+	}
+
+	userInfo := &UserInfo{}
+
+	if len(user) > 0 {
+		user := user[0]
+		userInfo.ID = *user.ID
+		userInfo.Email = *user.Email
+	} else {
+		fmt.Println("User not found")
+	}
+
 	return userInfo, nil
 }
 
@@ -205,46 +241,32 @@ func (c *ClientKeycloak) RefreshToken(ctx context.Context, refreshToken string) 
 	}
 	return token, nil
 }
+
 type InviteGroupsParams struct {
 	GroupIDKeycloak string
 }
-/*
-func (c *ClientKeycloak) InviteGroups(ctx context.Context, params InviteGroupsParams, accessToken string) (groupID string, error error) {
+
+func (c *ClientKeycloak) InviteGroups(ctx context.Context, params InviteGroupsParams, idUser, groupID string) (error error) {
 	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
 	if err != nil {
-		return "", err
-	}
-	generateNameGroup := fmt.Sprintf("%s-%s", params.Name, generateNumbers())
-
-	newGroup := gocloak.Group{
-		Name: gocloak.StringP(generateNameGroup),
-		Attributes: &map[string][]string{
-			"displayName": {params.Name},
-		},
+		return err
 	}
 
-	groupCreateID, err := c.kc.CreateGroup(ctx, jwt.AccessToken, c.realm, newGroup)
+	userInfo, err := c.kc.GetUserInfo(ctx, idUser, c.realm)
 
 	if err != nil {
-		return "", err
-	}
-
-	userInfo, err := c.kc.GetUserInfo(ctx, accessToken, c.realm)
-
-	if err != nil {
-		return "", err
+		return err
 	}
 
 	if userInfo.Sub == nil {
-		return "", fmt.Errorf("userInfo.Sub is nil")
+		return fmt.Errorf("userInfo.Sub is nil")
 	}
 
-	err = c.kc.AddUserToGroup(ctx, jwt.AccessToken, c.realm, *userInfo.Sub, groupCreateID)
+	err = c.kc.AddUserToGroup(ctx, jwt.AccessToken, c.realm, *userInfo.Sub, groupID)
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return groupCreateID, nil
+	return nil
 }
-*/
