@@ -5,9 +5,6 @@ import (
 	"Go-API-T/initializers"
 	"Go-API-T/middlewere"
 	"Go-API-T/models"
-	//"fmt"
-
-	//"fmt"
 
 	//"fmt"
 	//"strings"
@@ -16,7 +13,6 @@ import (
 	//"crypto/rand"
 	//"fmt"
 	//"math/big"
-
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -34,6 +30,8 @@ func GroupsController(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.M
 	group.DELETE("/declineGroup", mw.RequireAuth(), handler.declineGroup)
 
 	group.DELETE("/deleteGroup", mw.RequireAuth(), handler.deleteGroup)
+
+	group.GET("/showAllGroups", mw.RequireAuth(), handler.showAllGroups)
 
 }
 
@@ -350,6 +348,30 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"message": "Group invitation accepted successfully",
+		"message": "Group invitation declined successfully",
+	})
+}
+
+func (h *HandlerAPI) showAllGroups(c *gin.Context) {
+	accessToken := c.Request.Header.Get("Access-Token") //temporal
+
+	userKeycloak, err := h.clientKC.UserInfo(c.Request.Context(), accessToken)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	userKeycloakGroups, err := h.clientKC.GetGroups(c.Request.Context(), accessToken, userKeycloak.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"Groups": userKeycloakGroups,
 	})
 }

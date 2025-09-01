@@ -1,5 +1,4 @@
 package keycloak
-
 import (
 	"context"
 	"crypto/rand"
@@ -120,13 +119,13 @@ func (c *ClientKeycloak) UserInfo(ctx context.Context, accessToken string) (*Use
 }
 
 func (c *ClientKeycloak) GetUserInf(ctx context.Context, emailUser string) (*UserInfo, error) {
-	
+
 	params := gocloak.GetUsersParams{
 		Username: gocloak.StringP(emailUser),
 	}
 
 	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
-	if err != nil{
+	if err != nil {
 		return nil, err
 	}
 
@@ -270,3 +269,21 @@ func (c *ClientKeycloak) InviteGroups(ctx context.Context, params InviteGroupsPa
 
 	return nil
 }
+
+// para ver todos los grupos de un usuario:
+func (c *ClientKeycloak) GetGroups(ctx context.Context, accessToken, userID string) ([]*gocloak.Group, error) {
+	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
+
+	if err != nil {
+		return nil, err
+	}
+
+	groups, err := c.kc.GetUserGroups(ctx, jwt.AccessToken, c.realm, userID, gocloak.GetGroupsParams{})
+
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
+
