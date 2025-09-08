@@ -13,7 +13,6 @@ import (
 
 	//"strings"
 	//"time"
-
 	//"example/Go-API-T/services"
 	//"encoding/base64"
 	//"encoding/json"
@@ -25,9 +24,11 @@ import (
 	//"github.com/golang-jwt/jwt/v5"
 	//"golang.org/x/crypto/bcrypt"
 	//"strconv"
+
 )
 
 var otpStore = make(map[string]string)
+
 
 // function to save all endpoints in a "router".
 func UserRoutes(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middleware) {
@@ -36,7 +37,6 @@ func UserRoutes(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middlew
 	user.POST("/register", handler.register)
 	user.POST("/login", handler.login)
 	user.POST("/verify", handler.Verify2Step)
-	user.GET("/yeah", mw.RequireAuth(), handler.getUsers)
 
 	//user.POST("/TwoStep", twoStep)
 }
@@ -99,7 +99,7 @@ func (h *HandlerAPI) register(c *gin.Context) {
 		c.JSON(400, gin.H{"error": createU.Error})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, gin.H{"Message": "User created"})
 }
 
@@ -187,9 +187,7 @@ type MyKeycloakClient struct {
 	*keycloak.ClientKeycloak
 }
 
-func (h *HandlerAPI) getUsers(c *gin.Context) {
-	c.JSON(http.StatusAccepted, gin.H{"error": "Yeah"})
-}
+
 
 /*
 	func register(c *gin.Context) {

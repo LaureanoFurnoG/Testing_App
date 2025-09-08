@@ -28,12 +28,12 @@ services:
     networks:
       - keycloak_net
   
-  backend:
+  backendrest:
     build:
-      context: ./Back-end
+      context: ./Back-end/API REST
       dockerfile: Dockerfile.backend
     env_file:
-      - ./Back-end/.env.local
+      - ./Back-end/API REST/.env.local
     ports:
       - "5000:5000"
     depends_on:
@@ -54,6 +54,15 @@ services:
     networks:
       - backend
     
+  rabbitmq:
+    image: "rabbitmq:3.9-alpine"
+    ports: 
+      - "5672:5672"
+    deploy: 
+      mode: replicated
+      replicas: 1
+    volumes: 
+      - ./db-data/rabbitmq/:/var/lib/rabbitmq/
 volumes:
   postgres_data:
   pgdata:

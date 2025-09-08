@@ -17,6 +17,7 @@ func SetupRouter() *gin.Engine {
 	handler := controllers.NewHandlerAPI(clientKC)
 	controllers.UserRoutes(api, handler, mw) //call the function in UserController to register the users routes
 	controllers.GroupsController(api, handler, mw)
+	controllers.TestsRoutes(api, handler, mw)
 	
 	return r // return the router
 }
