@@ -3,9 +3,12 @@ package controllers
 import (
 	"Go-API-T/middlewere"
 	"context"
+	"strconv"
 
 	//"strings"
 	//"time"
+	"Go-API-T/initializers"
+	"Go-API-T/models"
 	"encoding/json"
 	"log"
 	"time"
@@ -19,6 +22,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
 	//"github.com/golang-jwt/jwt/v5"
 	//"golang.org/x/crypto/bcrypt"
 	//"strconv"
@@ -46,7 +50,7 @@ func declareExchange(ch *amqp.Channel) error {
 func TestsRoutes(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middleware) {
 	user := rg.Group("/tests") //prefix that all routes(endpoints)
 
-	user.POST("/test-event", handler.TestEvent)
+	user.POST("/test-event", mw.RequireAuth(), handler.TestEvent)
 
 	//user.POST("/TwoStep", twoStep)
 }
@@ -121,15 +125,32 @@ func (e *Emitter) Push(event string, severity string, dataJson []byte) error {
 	log.Println("Sent message:", string(body))
 	return nil
 }
+
 type PayloadsR struct {
-    Name          string `json:"name"`
-    Data          string `json:"data"`
-    CorrelationId string `json:"correlationId"`
-    ReplyTo       string `json:"replyTo"`
+	Name          string `json:"name"`
+	Data          string `json:"data"`
+	CorrelationId string `json:"correlationId"`
+	ReplyTo       string `json:"replyTo"`
 }
+type jsonMapResponse struct {
+	HttpResponseCode string
+	Response         string
+}
+type jsonData struct {
+	HttpType    string
+	Url         string
+	RequestType string
+	Request     map[string]interface{}
+	Header      map[string]interface{}
+	Token       string
+
+	Response         map[string]interface{}
+	ResponseHttpCode int
+}
+
 func (h *HandlerAPI) TestEvent(c *gin.Context) {
 	// Connect rabbitMQ
-	var jsonData struct {
+	var jsonDataRe struct {
 		Id_Group    int
 		HttpType    string
 		Url         string
@@ -138,7 +159,13 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 		Header      map[string]interface{}
 		Token       string
 	}
-	if c.ShouldBindJSON(&jsonData) != nil {
+
+	accessToken := c.Request.Header.Get("Access-Token") //temporal
+
+	//accessToken := c.GetHeader("Authorization")
+	//tokenString := strings.TrimPrefix(accessToken, "Bearer ")
+
+	if c.ShouldBindJSON(&jsonDataRe) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to read body",
 		})
@@ -180,7 +207,7 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 	}
 	*/
 
-	reqJson, err := json.Marshal(jsonData)
+	reqJson, err := json.Marshal(jsonDataRe)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to marshal request"})
 		return
@@ -193,9 +220,9 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 	defer cancel()
 	payload := PayloadsR{
 		Name:          "test",
-		Data:          string(reqJson), 
-		ReplyTo:       msgs.Name,       // cola de respuesta
-		CorrelationId: corrID,          // id único
+		Data:          string(reqJson),
+		ReplyTo:       msgs.Name, // cola de respuesta
+		CorrelationId: corrID,    // id único
 	}
 	body, _ := json.Marshal(payload)
 
@@ -206,8 +233,8 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 		false,
 		false,
 		amqp.Publishing{
-			ContentType:   "application/json",
-			Body:          body,
+			ContentType: "application/json",
+			Body:        body,
 		},
 	)
 	if err != nil {
@@ -241,13 +268,126 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 		}
 	}()
 	//wait timeout or response
-	var jsonMap map[string]interface{} //for parse to json
+	var jsonMap jsonMapResponse //for parse to json
+	var jsonResult map[string]interface{}
 	select {
 	case res := <-responseCH:
-		json.Unmarshal([]byte(res), &jsonMap) //parse to json
-		c.JSON(http.StatusOK, gin.H{"result": jsonMap}) //response a json
+		json.Unmarshal([]byte(res), &jsonMap)
+		json.Unmarshal([]byte(jsonMap.Response), &jsonResult) //parse to json
+		// Parse HTTP response code
+		httpCode, err := strconv.Atoi(jsonMap.HttpResponseCode)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Your endpoint, maybe not response with a status code",
+			})
+			return
+		}
+		saveData := jsonData{
+			HttpType:    jsonDataRe.HttpType,
+			Url:         jsonDataRe.Url,
+			RequestType: jsonDataRe.RequestType,
+			Request: map[string]interface{}{
+				"HttpType":    jsonDataRe.HttpType,
+				"Url":         jsonDataRe.Url,
+				"RequestType": jsonDataRe.RequestType,
+				"Request":     jsonDataRe.Request,
+				"Header":      jsonDataRe.Header,
+				"Token":       jsonDataRe.Token},
+			Header: jsonDataRe.Header,
+			Token:  jsonDataRe.Token,
+
+			Response:         jsonResult,
+			ResponseHttpCode: httpCode,
+		}
+		saveD := saveDataTest(jsonDataRe.Id_Group, saveData, accessToken, c, h)
+		if saveD != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Error in saved the tested",
+			})
+			return
+		}
+		c.JSON(http.StatusOK, gin.H{"result": map[string]interface{}{"HTTP_Code": jsonMap.HttpResponseCode, "Response": jsonResult}}) //response a json
 	case <-time.After(5 * time.Second):
 		c.JSON(http.StatusGatewayTimeout, gin.H{"error": "timeout waiting for response"})
 	}
 
+}
+
+func saveDataTest(Id_Group int, values jsonData, accessToken string, c *gin.Context, h *HandlerAPI) error {
+	var group models.Groups
+	searchGroup := initializers.DB.Find(&group, "id = ?", Id_Group)
+
+	if searchGroup.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Group Missing",
+		})
+		return searchGroup.Error
+	}
+
+	//search user
+	var userF models.Users
+	userKeycloak, err := h.clientKC.UserInfo(c.Request.Context(), accessToken)
+
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": err,
+		})
+		return err
+	}
+
+	userFind := initializers.DB.First(&userF, "keycloak_id = ?", userKeycloak.ID)
+
+	if userFind.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "User Missing",
+		})
+		return err
+	}
+	//search if the test exist already
+	
+	//create instance of test data in local database
+	requestJSON, err := json.Marshal(values.Request)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to marshal request data",
+		})
+		return err
+	}
+
+	responseJSON, err := json.Marshal(values.Response)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to marshal response data",
+		})
+		return err
+	}
+
+	headerJSON, err := json.Marshal(values.Header)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failed to marshal header data",
+		})
+		return err
+	}
+	testS := models.Backendtests{
+		Idgroup:     uint(Id_Group),
+		Httptype:    values.HttpType,
+		Urlapi:      values.Url,
+		Requesttype: values.RequestType,
+		Request:     requestJSON,
+		Response:    responseJSON,
+		ResponseHttpCode: values.ResponseHttpCode,
+		Header:      headerJSON,
+		Token:       values.Token,
+	}
+
+	createTest := initializers.DB.Create(&testS)
+
+	if createTest.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Test not created in the database",
+		})
+		return err
+	}
+	return nil
 }

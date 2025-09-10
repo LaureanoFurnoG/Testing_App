@@ -6,9 +6,12 @@ import (
 	//"github.com/gin-gonic/gin"
 	"log"
 	//"net/http"
+	//"time"
 	"Go-API-T/initializers"
 	"Go-API-T/router" // import routers
 	"os"
+
+	//"github.com/gin-contrib/cors"
 
 )
 
@@ -17,11 +20,11 @@ func init() {
 	initializers.ConnectToDB()
 }
 func main() {
-	
+
 	r := router.SetupRouter() //call all routers
-	
+
 	err := r.SetTrustedProxies([]string{"127.0.0.1"}) //create proxies
-	if err != nil{
+	if err != nil {
 		log.Fatalf("Error setting trusted proxies")
 	}
 

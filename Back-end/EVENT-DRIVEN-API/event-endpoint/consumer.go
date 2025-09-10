@@ -3,9 +3,11 @@ package event
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+	"strconv"
+
 	"github.com/go-resty/resty/v2"
 	amqp "github.com/rabbitmq/amqp091-go"
-	"log"
 )
 
 type Consumer struct {
@@ -96,18 +98,22 @@ type DataParsed struct {
 	Header      map[string]interface{}
 	Token       string
 }
+type ResponseData struct {
+	Response         string
+	HttpResponseCode string
+}
 
 func handlePayload(payload Payload) {
-	fmt.Println(payload)
-	log.Print(payload)
+	//fmt.Println(payload)
+	//log.Print(payload)
 	switch payload.Name {
 	case "test", "event":
 		// log whatever we get
-		result, err := testApp(payload)
+		_, err := testApp(payload)
 		if err != nil {
 			log.Panic(err)
 		}
-		log.Println(result)
+		//log.Println(result)
 	}
 }
 
@@ -166,35 +172,210 @@ func testApp(dataParseds Payload) (result string, err error) {
 				CorrelationId: dataParseds.CorrelationId,
 			},
 		)
+	case "PUT":
+		response, err = PutTest(dataParsed)
+		if err != nil {
+			panic(err)
+		}
+		ch.Publish(
+			"",                  // default exchange
+			dataParseds.ReplyTo, // la cola que mandó el request
+			false,
+			false,
+			amqp.Publishing{
+				ContentType:   "application/json",
+				Body:          []byte(response),
+				CorrelationId: dataParseds.CorrelationId,
+			},
+		)
+	case "PATCH":
+		response, err = PatchTest(dataParsed)
+		if err != nil {
+			panic(err)
+		}
+		ch.Publish(
+			"",                  // default exchange
+			dataParseds.ReplyTo, // la cola que mandó el request
+			false,
+			false,
+			amqp.Publishing{
+				ContentType:   "application/json",
+				Body:          []byte(response),
+				CorrelationId: dataParseds.CorrelationId,
+			},
+		)
+	case "DELETE":
+		response, err = DeleteTest(dataParsed)
+		if err != nil {
+			panic(err)
+		}
+		ch.Publish(
+			"",                  // default exchange
+			dataParseds.ReplyTo, // la cola que mandó el request
+			false,
+			false,
+			amqp.Publishing{
+				ContentType:   "application/json",
+				Body:          []byte(response),
+				CorrelationId: dataParseds.CorrelationId,
+			},
+		)
 	}
 
 	return response, nil
 }
 
-func PostTest(dataP DataParsed) (result string, err error) {
+func PutTest(dataP DataParsed) (string, error) {
 	client := resty.New()
-	resp, err := client.R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(dataP.Request).
-		Post(dataP.Url)
 
+	headers, err := HeadersSet(dataP)
 	if err != nil {
 		return "", err
 	}
 
-	return resp.String(), nil
+	//log.Println(headers)
+	resp, err := client.R().
+		SetBody(dataP.Request).
+		SetHeaders(headers).
+		Put(dataP.Url)
+	if err != nil {
+		return "", err
+	}
+	responseJSON, _ := JsonResponse(resp)
+	return responseJSON, nil
+}
+
+func PatchTest(dataP DataParsed) (string, error) {
+	client := resty.New()
+
+	headers, err := HeadersSet(dataP)
+	if err != nil {
+		return "", err
+	}
+
+	//log.Println(headers)
+	resp, err := client.R().
+		SetBody(dataP.Request).
+		SetHeaders(headers).
+		Patch(dataP.Url)
+	if err != nil {
+		return "", err
+	}
+	responseJSON, _ := JsonResponse(resp)
+	return responseJSON, nil
+}
+
+func PostTest(dataP DataParsed) (result string, err error) {
+	client := resty.New()
+	if len(dataP.Header) == 0 {
+		resp, err := client.R().
+			SetBody(dataP.Request).
+			Post(dataP.Url)
+
+		if err != nil {
+			return "", err
+		}
+		responseJSON, _ := JsonResponse(resp)
+		return responseJSON, nil
+
+	} else {
+		headers, err := HeadersSet(dataP)
+		if err != nil {
+			return "", err
+		}
+		//log.Println(headers)
+		resp, err := client.R().
+			SetBody(dataP.Request).
+			SetHeaders(headers).
+			Post(dataP.Url)
+		if err != nil {
+			return "", err
+		}
+		responseJSON, _ := JsonResponse(resp)
+		return responseJSON, nil
+
+	}
+
+}
+
+func DeleteTest(dataP DataParsed) (result string, err error) {
+	client := resty.New()
+	headers, err := HeadersSet(dataP)
+	if err != nil {
+		return "", err
+	}
+	//log.Println(headers)
+	resp, err := client.R().
+		SetBody(dataP.Request).
+		SetHeaders(headers).
+		Delete(dataP.Url)
+	if err != nil {
+		return "", err
+	}
+	responseJSON, _ := JsonResponse(resp)
+	return responseJSON, nil
 }
 
 func GetTest(dataP DataParsed) (result string, err error) {
 	client := resty.New()
 
+	params := make(map[string]string)
+	for k, v := range dataP.Request {
+		// if the value is string
+		if str, ok := v.(string); ok {
+			params[k] = str
+		} else {
+			// convert to string if the value is an interface or another type
+			params[k] = fmt.Sprintf("%v", v)
+		}
+	}
+
+	headers, err := HeadersSet(dataP)
+	if err != nil {
+		return "", err
+	}
+
 	resp, err := client.R().
-		SetHeader("Content-Type", "application/json").
+		SetQueryParams(params).
+		SetHeaders(headers).
 		Get(dataP.Url)
 
 	if err != nil {
 		return "", err
 	}
 
-	return resp.String(), nil
+	responseJSON, _ := JsonResponse(resp)
+	return responseJSON, nil
+}
+
+func HeadersSet(dataP DataParsed) (result map[string]string, err error) {
+	headers := make(map[string]string)
+	for k, v := range dataP.Header {
+		// if the value is string
+		if str, ok := v.(string); ok {
+			if k == "Access-Token" {
+				headers["Authorization"] = "Bearer " + str
+			} else {
+				headers[k] = str
+			}
+		} else {
+			// convert to string if the value is an interface or another type
+			headers[k] = fmt.Sprintf("%v", v)
+		}
+	}
+	return headers, nil
+}
+
+func JsonResponse(resp *resty.Response) (result string, err error) {
+	ResponseDatas := ResponseData{
+		Response:         resp.String(),
+		HttpResponseCode: strconv.Itoa(resp.StatusCode()),
+	}
+
+	responseJSON, err := json.Marshal(ResponseDatas)
+	if err != nil {
+		return "", err
+	}
+
+	return string(responseJSON), nil
 }
