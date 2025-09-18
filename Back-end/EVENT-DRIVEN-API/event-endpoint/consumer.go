@@ -92,7 +92,7 @@ func (consumer *Consumer) Listen(topics []string) error {
 type DataParsed struct {
 	Id_Group    int
 	HttpType    string
-	Url         string
+	Urlapi         string
 	RequestType string
 	Request     map[string]interface{}
 	Header      map[string]interface{}
@@ -205,6 +205,7 @@ func testApp(dataParseds Payload) (result string, err error) {
 			},
 		)
 	case "DELETE":
+		
 		response, err = DeleteTest(dataParsed)
 		if err != nil {
 			panic(err)
@@ -237,7 +238,7 @@ func PutTest(dataP DataParsed) (string, error) {
 	resp, err := client.R().
 		SetBody(dataP.Request).
 		SetHeaders(headers).
-		Put(dataP.Url)
+		Put(dataP.Urlapi)
 	if err != nil {
 		return "", err
 	}
@@ -257,7 +258,7 @@ func PatchTest(dataP DataParsed) (string, error) {
 	resp, err := client.R().
 		SetBody(dataP.Request).
 		SetHeaders(headers).
-		Patch(dataP.Url)
+		Patch(dataP.Urlapi)
 	if err != nil {
 		return "", err
 	}
@@ -270,7 +271,7 @@ func PostTest(dataP DataParsed) (result string, err error) {
 	if len(dataP.Header) == 0 {
 		resp, err := client.R().
 			SetBody(dataP.Request).
-			Post(dataP.Url)
+			Post(dataP.Urlapi)
 
 		if err != nil {
 			return "", err
@@ -287,7 +288,7 @@ func PostTest(dataP DataParsed) (result string, err error) {
 		resp, err := client.R().
 			SetBody(dataP.Request).
 			SetHeaders(headers).
-			Post(dataP.Url)
+			Post(dataP.Urlapi)
 		if err != nil {
 			return "", err
 		}
@@ -308,7 +309,7 @@ func DeleteTest(dataP DataParsed) (result string, err error) {
 	resp, err := client.R().
 		SetBody(dataP.Request).
 		SetHeaders(headers).
-		Delete(dataP.Url)
+		Delete(dataP.Urlapi)
 	if err != nil {
 		return "", err
 	}
@@ -338,7 +339,7 @@ func GetTest(dataP DataParsed) (result string, err error) {
 	resp, err := client.R().
 		SetQueryParams(params).
 		SetHeaders(headers).
-		Get(dataP.Url)
+		Get(dataP.Urlapi)
 
 	if err != nil {
 		return "", err
