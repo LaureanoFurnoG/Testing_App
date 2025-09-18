@@ -14,44 +14,44 @@ type Users struct {
 	KeycloakID string `gorm:"column:keycloak_id"`
 }
 
-type GroupsRelation struct { 
+type GroupsRelation struct {
 	ID uint `gorm:"primaryKey"`
 
-	Iduser uint 
+	Iduser uint
 	User   Users `gorm:"foreignKey:Iduser;references:ID"`
 
-	Idgroup uint 
+	Idgroup uint
 	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
-	Accepted bool 
+	Accepted bool
 }
 
 type Backendtests struct {
 	ID uint `gorm:"primaryKey"`
 
-	Idgroup uint 
-	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
-
-	Httptype    string
-	Urlapi      string
-	Requesttype string
-	Request     datatypes.JSON `gorm:"type:json"`
-	Response    datatypes.JSON `gorm:"type:json"`
+	Idgroup          uint
+	Group            Groups `gorm:"foreignKey:Idgroup;references:ID"`
+	Name             string
+	Httptype         string
+	Urlapi           string `json:"Urlapi"` 
+	Requesttype      string
+	Request          datatypes.JSON `gorm:"type:json"`
+	Response         datatypes.JSON `gorm:"type:json"`
 	ResponseHttpCode int
-	Header      datatypes.JSON `gorm:"type:json"`
-	Token       string
+	Header           datatypes.JSON `gorm:"type:json"`
+	Token            string
 }
 
-type SaveEndpointResult struct {
+type Saveendpointresult struct {
 	ID uint `gorm:"primaryKey"`
 
 	Idgroup uint
 	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
-	Idtest uint
+	Idtest       uint
 	Backendtests Backendtests `gorm:"foreignKey:Idtest;references:ID"`
 
 	Testcasedescription string
-	TestedInfrontend    bool
+	Testedinfrontend    bool
 	Evidencefrontend    string
 }
