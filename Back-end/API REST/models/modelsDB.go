@@ -26,10 +26,10 @@ type GroupsRelation struct {
 	Accepted bool 
 }
 
-type BackendTests struct {
+type Backendtests struct {
 	ID uint `gorm:"primaryKey"`
 
-	IdGroup uint 
+	Idgroup uint 
 	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
 	Httptype    string
@@ -37,6 +37,7 @@ type BackendTests struct {
 	Requesttype string
 	Request     datatypes.JSON `gorm:"type:json"`
 	Response    datatypes.JSON `gorm:"type:json"`
+	ResponseHttpCode int
 	Header      datatypes.JSON `gorm:"type:json"`
 	Token       string
 }
@@ -48,7 +49,7 @@ type SaveEndpointResult struct {
 	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
 	Idtest uint
-	BackendTests BackendTests `gorm:"foreignKey:Idtest;references:ID"`
+	Backendtests Backendtests `gorm:"foreignKey:Idtest;references:ID"`
 
 	Testcasedescription string
 	TestedInfrontend    bool
