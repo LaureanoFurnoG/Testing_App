@@ -32,7 +32,7 @@ func GroupsController(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.M
 	group.DELETE("/deleteGroup", mw.RequireAuth(), handler.deleteGroup)
 
 	group.GET("/showAllGroups", mw.RequireAuth(), handler.showAllGroups)
-
+	
 }
 
 func (h *HandlerAPI) createGroup(c *gin.Context) {
