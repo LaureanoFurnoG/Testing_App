@@ -2,32 +2,23 @@ package controllers
 
 import (
 	"Go-API-T/middlewere"
+	"Go-API-T/services"
 	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"strconv"
-	//"strings"
-	//"time"
+
 	"Go-API-T/initializers"
 	"Go-API-T/models"
 	"encoding/json"
 	"log"
 	"time"
 
-	//"example/Go-API-T/services"
-	//"encoding/base64"
-	//"encoding/json"
-	//"context"
-	//"math/rand"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-
-	//"github.com/golang-jwt/jwt/v5"
-	//"golang.org/x/crypto/bcrypt"
-	//"strconv"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
@@ -54,11 +45,15 @@ func TestsRoutes(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middle
 
 	test.POST("/test-event", mw.RequireAuth(), handler.TestEvent)
 	test.GET("/find-tests", mw.RequireAuth(), handler.FindTest)
+	test.GET("/find-testsSave", mw.RequireAuth(), handler.FindTestSave)
+
 	test.POST("/test-all", mw.RequireAuth(), handler.RunAllEnd)
 	test.POST("/create-save", mw.RequireAuth(), handler.saveTestEndpointsDoc)
 	test.DELETE("/delete-testSave", mw.RequireAuth(), handler.DeleteEndpointSave)
 	test.DELETE("/delete-test", mw.RequireAuth(), handler.DeleteEndpoint)
 	test.POST("/test-front", mw.RequireAuth(), handler.TestFrontEnd)
+	test.POST("/make-pdf", mw.RequireAuth(), handler.MakePDF)
+
 }
 
 // define a
@@ -623,4 +618,55 @@ func (h *HandlerAPI) TestFrontEnd(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"result": &result})
+}
+
+type Section struct {
+	Title string
+	Page  int
+	Level int
+}
+
+func (h *HandlerAPI) FindTestSave(c *gin.Context) {
+	var jsonDataRe struct {
+		Id int
+	}
+	if c.ShouldBindJSON(&jsonDataRe) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to read body",
+		})
+		return
+	}
+
+	testSave := []models.Saveendpointresult{}
+	find := initializers.DB.Preload("Backendtests").Preload("Group").Find(&testSave)
+
+	if find.Error != nil {
+		c.JSON(404, gin.H{
+			"error": "Search endpoint saved error ",
+		})
+		return
+	}
+
+	var Result struct {
+		Response []models.Saveendpointresult
+	}
+
+	Result.Response = testSave
+
+	c.JSON(200, gin.H{"Result": Result})
+
+}
+
+func (h *HandlerAPI) MakePDF(c *gin.Context) {
+	testsSaved := []models.Saveendpointresult{}
+	all_tests_saved := initializers.DB.Preload("Backendtests").Preload("Group").Find(&testsSaved)
+	if all_tests_saved.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to return the endpoints save",
+		})
+		return
+	}
+	services.CreatePDF(testsSaved, c)
+
+	c.JSON(http.StatusOK, gin.H{"msg": "PDF generado"})
 }
