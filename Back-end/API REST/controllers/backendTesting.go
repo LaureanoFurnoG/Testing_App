@@ -658,6 +658,15 @@ func (h *HandlerAPI) FindTestSave(c *gin.Context) {
 }
 
 func (h *HandlerAPI) MakePDF(c *gin.Context) {
+	var jsonData services.Request
+
+	if c.ShouldBindJSON(&jsonData) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to read body",
+		})
+		return
+	}
+
 	testsSaved := []models.Saveendpointresult{}
 	all_tests_saved := initializers.DB.Preload("Backendtests").Preload("Group").Find(&testsSaved)
 	if all_tests_saved.Error != nil {
@@ -666,7 +675,7 @@ func (h *HandlerAPI) MakePDF(c *gin.Context) {
 		})
 		return
 	}
-	services.CreatePDF(testsSaved, c)
+	services.CreatePDF(jsonData, testsSaved, c)
 
 	c.JSON(http.StatusOK, gin.H{"msg": "PDF generado"})
 }
