@@ -39,9 +39,7 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 	var jsonData struct {
 		Name string
 	}
-	accessToken := c.Request.Header.Get("Access-Token") //temporal
-	//accessToken := c.GetHeader("Authorization")
-	//tokenString := strings.TrimPrefix(accessToken, "Bearer ")
+	accessToken := c.GetHeader("Access-Token")
 
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -235,8 +233,6 @@ func (h *HandlerAPI) acceptInvitation(c *gin.Context) {
 	}
 	accessToken := c.Request.Header.Get("Access-Token") //temporal
 
-	//accessToken := c.GetHeader("Authorization")
-	//tokenString := strings.TrimPrefix(accessToken, "Bearer ")
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to read body",
@@ -297,8 +293,6 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 	}
 	accessToken := c.Request.Header.Get("Access-Token") //temporal
 
-	//accessToken := c.GetHeader("Authorization")
-	//tokenString := strings.TrimPrefix(accessToken, "Bearer ")
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to read body",

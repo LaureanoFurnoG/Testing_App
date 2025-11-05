@@ -199,7 +199,7 @@ func saveDataTest(Id_Group int, values jsonData, accessToken string, c *gin.Cont
 		})
 		return err
 	}
-
+	
 	userFind := initializers.DB.First(&userF, "keycloak_id = ?", userKeycloak.ID)
 
 	if userFind.Error != nil {
