@@ -1,14 +1,13 @@
 
 /* pages */
-import Dashboard from '../pages/Dashboard/Dashboard.tsx'
-import ClientManagement from '../pages/ClientManagement/ClientManagement.tsx'
+import GroupsManagement from '../pages/Groups/Groups.tsx'
+import Documentation from '../pages/Documentation/Docuementation.tsx'
 import Users from '../pages/Users/Users.tsx'
 import Settings from '../pages/Settings/Settings.tsx'
 import Profile from '../pages/Profile/Profile.tsx'
 import Login from '../pages/Login/Login.tsx'
 import MainLayout from './MainLayout';
-
-import { Layout } from 'antd';
+import Homepage from '../pages/Homepage/Homepage.tsx';
 //import HeaderBar from '../components/HeaderBar/HeaderBar.tsx';
 import { Routes, Route, useLocation } from "react-router-dom";
 
@@ -28,12 +27,12 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Login />} />
-
-        <Route path="/page" element={<MainLayout />}>
-          <Route path="Dashboard" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/" element={<Homepage />} />
+        <Route path="/" element={<MainLayout />}>
+          <Route path="Groups" element={<GroupsManagement />} />
           <Route path="Users" element={<Users />} />
-          <Route path="ClientManagement" element={<ClientManagement />} />
+          <Route path="Documentation" element={<Documentation />} />
           <Route path="Settings" element={<Settings />} />
           <Route path="Profile" element={<Profile />} />
         </Route>

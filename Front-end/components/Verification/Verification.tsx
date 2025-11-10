@@ -2,7 +2,7 @@ import './style.css'
 import React, {} from 'react';
 import { Input, message } from 'antd';
 import type { GetProps } from 'antd';
-import axiosInstance from '../../axios.js';
+import axiosInstance from '../../axios';
 import { useNavigate } from 'react-router-dom';
 
 
@@ -13,7 +13,7 @@ interface CardType {
 type OTPProps = GetProps<typeof Input.OTP>;
 
 const VerificatorAuth: React.FC <CardType> = ({ CardType }) => {
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi,] = message.useMessage();
   let navigate = useNavigate()
 
   const dashboardNavigate = () => {
@@ -57,7 +57,7 @@ const VerificatorAuth: React.FC <CardType> = ({ CardType }) => {
           <div className='codeBox'>
             <Input.OTP  formatter={(str) => str.toUpperCase()} {...sharedProps} />
           </div>
-          <button className='loginRedirect' onClick={() => CardType("login")}>Go to the <span style={{color:"#916BF3"}}>Login</span></button>
+          <button className='loginRedirect' onClick={() => CardType("login")}>Go to the <span style={{color:"#236d55"}}>Login</span></button>
         </div>
     </>
   );

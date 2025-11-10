@@ -2,9 +2,8 @@ import './style.css'
 import React, {useRef, useState} from 'react';
 import { Button, Form, Input, message } from 'antd';
 import type { FormItemProps } from 'antd';
-import MicrosoftButton from '../MicrosoftLogin/MicrosoftLogin'
 import ReCAPTCHA from "react-google-recaptcha";
-import axiosInstance from '../../axios.js';
+import axiosInstance from '../../axios';
 
 const MyFormItemContext = React.createContext<(string | number)[]>([]);
 
@@ -38,11 +37,10 @@ interface LoginCardProps {
 
 const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
     const captcha = useRef<ReCAPTCHA | null>(null);
-    const [validSession, setValidSession] = useState(false)
+    const [, setValidSession] = useState(false)
     const [captchaValid, setCaptchaValid] = useState<boolean | null>(null)
     const [, setUserValid] = useState(false)
-    const [responseForgotPASS, setResponseSend] = useState("")
-    const [messageApi, contextHolder] = message.useMessage();
+    const [messageApi, ] = message.useMessage();
 
     function onChange() {
         if (captcha.current.getValue()) {
@@ -92,13 +90,11 @@ const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
                     <Input required={true} type='password' style={{height:54}} placeholder="Password" />
                 </MyFormItem>
 
-                <Button style={{height:54, backgroundColor:'#916BF3'}} type="primary" htmlType="submit">
+                <Button style={{height:54, backgroundColor:'#236d55'}} type="primary" htmlType="submit">
                     LOGIN
                 </Button>
             </Form>
             <button className='forgotPasswordBTN' onClick={() => CardType("change")}>Forgot Passoword?</button>
-            <MicrosoftButton onClick={() => console.log("Login con Microsoft")}/>
-
             <div className="captcha-container">
                 <ReCAPTCHA className='captchaD'
                 ref={captcha}
