@@ -1,0 +1,31 @@
+.ant-layout:has(.Group_Name) {
+  background: none !important;
+}
+.ant-space-compact button {
+  background-color: #58bd9f;
+}
+.ant-space-compact
+  :where(.css-dev-only-do-not-override-ut69n1).ant-input-outlined:hover {
+  border-color: #58bd9f;
+}
+
+.inputEndpoint {
+  width: 60%;
+}
+
+@media (max-width: 855px) {
+  .inputEndpoint {
+    width: 100%;
+  }
+}
+
+@media (max-width: 587px) {
+  .inputEndpoint {
+    position: relative;
+    z-index: 0;
+  }
+  .ant-layout-content{
+    z-index: -1;
+    padding-top: 20px;
+  }
+}

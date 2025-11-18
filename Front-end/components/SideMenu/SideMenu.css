@@ -25,10 +25,11 @@
   background-color: #236d55;
   border-right: 1px solid rgba(255, 255, 255, 0.897);
 }
-.sideMenu li *{
+.sideMenu li * {
   color: rgb(255, 255, 255) !important;
 }
-.sideMenu .ant-layout-sider, .sideMenu .ant-menu {
+.sideMenu .ant-layout-sider,
+.sideMenu .ant-menu {
   background-color: #236d55 !important;
   border: none !important;
 }
@@ -39,10 +40,11 @@
 .sideMenu:not(.collapsed) .dataUser-sideMenu {
   width: 240px;
 }
-:where(.css-dev-only-do-not-override-ut69n1).ant-menu-light .ant-menu-item-selected{
+:where(.css-dev-only-do-not-override-ut69n1).ant-menu-light
+  .ant-menu-item-selected {
   background-color: #4dcca4;
 }
-@media (max-width: 402px) {
+@media (max-width: 586px) {
   .sideMenu {
     position: fixed;
   }
@@ -54,6 +56,10 @@
   .sideMenu.collapsed {
     position: fixed;
     width: 100vw !important;
+    border: none !important;
+  }
+  .sideMenu.collapsed .SideMenu-activeButton{
+    border: none;
   }
   .sideMenu:not(.collapsed) {
     height: 100% !important;

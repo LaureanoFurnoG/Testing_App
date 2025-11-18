@@ -4,10 +4,16 @@ import CardGroup from '../../components/CardGroup/CardGroup'
 const GroupsManagement: React.FC = () => {
   return (
     <div className='Container-groups-all'>
-      <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
-      <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
-      <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
-      <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
+      <div className='createG-Header'>
+        <h2>Groups</h2>
+        <button>Create Group</button>
+      </div>
+      <div className='cards-groups'>
+        <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
+        <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
+        <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
+        <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
+      </div>
     </div>
   );
 };

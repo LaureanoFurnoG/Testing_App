@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Dropdown, Avatar, type MenuProps  } from 'antd';
 import {
   FileDoneOutlined,
-  UserAddOutlined,
   UsergroupAddOutlined,
   UserOutlined,
 } from '@ant-design/icons';
