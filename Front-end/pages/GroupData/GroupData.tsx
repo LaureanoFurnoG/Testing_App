@@ -21,12 +21,15 @@ const Users: React.FC = () => {
             <h2>Backend endpoints</h2>
             <button>Create Group</button>
           </div>
-          <Search placeholder="input search endpoint" onSearch={onSearch} style={{ width: '40%' }} />
+          <Search placeholder="input search endpoint" onSearch={onSearch} className='searchEndpoint' />
         </div>
         <div>
           <CollapseCard Id={1} Name='sd' Endpoints='sdk' Members='293' />
         </div>
       </div>
+
+      <Input placeholder='URL FRONT END' className='urlfrontinput'/>
+
     </div>
   );
 };

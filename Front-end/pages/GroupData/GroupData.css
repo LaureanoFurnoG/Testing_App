@@ -16,10 +16,19 @@
 .inputEndpoint {
   width: 60%;
 }
+.inputEndpoint * {
+  border-radius: 2px !important;
+}
 .backend-endpoints {
   background-color: white;
   margin-top: 20px;
   padding: 20px;
+}
+.searchEndpoint {
+  width: 40%;
+}
+.searchEndpoint * {
+  border-radius: 2px;
 }
 .Up-Title-search {
   display: flex;
@@ -50,18 +59,24 @@
 .Up-Title-search div h2 {
   margin: 0px;
 }
-.backend-endpoints{
+.backend-endpoints {
   overflow-x: auto;
 }
-@media (max-width:900px){
-  .Up-Title-search{
+.urlfrontinput {
+  margin-top: 20px;
+  border-radius: 2px;
+  width: 60%;
+}
+@media (max-width: 900px) {
+  .Up-Title-search {
     flex-direction: column;
     gap: 20px;
   }
-  .Up-Title-search div{
+  .Up-Title-search div {
     justify-content: space-between;
   }
-  .Up-Title-search div, .Up-Title-search .ant-input-group-wrapper{
+  .Up-Title-search div,
+  .Up-Title-search .ant-input-group-wrapper {
     width: 100% !important;
   }
 }
@@ -70,7 +85,7 @@
   .inputEndpoint {
     width: 100%;
   }
-  .div3{
+  .div3 {
     flex-direction: column;
     align-items: start !important;
     gap: 10px;
@@ -86,10 +101,10 @@
     z-index: -1;
     padding-top: 20px;
   }
-  .ContainerContent-Page{
+  .ContainerContent-Page {
     z-index: 0;
   }
-  .sideMenu{
+  .sideMenu {
     z-index: 23;
   }
 }

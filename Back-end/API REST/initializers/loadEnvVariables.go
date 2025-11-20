@@ -6,8 +6,8 @@ import (
 )
 
 func InitEnv() {
-	err := godotenv.Load(".env", ".env.local") // load .env
+	err := godotenv.Load(".env") // load .env
 	if err != nil {
-		log.Fatal("Error in load .env")
+		log.Fatal("Error in load .env", err)
 	}
 }
