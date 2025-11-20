@@ -36,4 +36,8 @@
   .createG-Header {
     padding-top: 20px;
   }
+  .cards-groups{
+    max-height: 500px;
+    overflow-y: auto;
+  }
 }

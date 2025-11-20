@@ -18,7 +18,7 @@ const CardGroup: React.FC<CardGroupProps> = ({Id, Name, Endpoints, Members }) =>
     return (
     <>
         <div className='ContainerGroupCard'>
-          <div>
+          <div className='container-data'>
             <h2>{Name}</h2>
             <p><b>Endpoints</b>: {Endpoints}</p>
             <p><b>Members</b>: {Members}</p>

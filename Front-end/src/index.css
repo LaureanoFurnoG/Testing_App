@@ -13,7 +13,6 @@ html,
   flex-direction: row-reverse;
 }
 
-.ant-layout-content {
-  background-color: white;
+body{
+  background-color: rgb(231, 231, 231);
 }
-
