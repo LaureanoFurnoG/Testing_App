@@ -22,6 +22,9 @@
 }
 
 .sideMenu {
+  position: fixed;
+  height: 100%;
+  z-index: 999;
   background-color: #236d55;
   border-right: 1px solid rgba(255, 255, 255, 0.897);
 }

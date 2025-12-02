@@ -12,8 +12,7 @@ const GroupsManagement: React.FC = () => {
         <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
         <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
         <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
-        <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>
-        
+        <CardGroup Id={2} Name='Hola' Endpoints='2' Members='2'/>        
       </div>
     </div>
   );

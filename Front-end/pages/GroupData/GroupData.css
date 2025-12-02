@@ -67,6 +67,16 @@
   border-radius: 2px;
   width: 60%;
 }
+
+.frontend-endpoints{
+  margin-top: 20px;
+  background-color: white;
+}
+.Users-table{
+  background-color: white;
+  padding: 20px;
+  margin-top: 20px;
+}
 @media (max-width: 900px) {
   .Up-Title-search {
     flex-direction: column;

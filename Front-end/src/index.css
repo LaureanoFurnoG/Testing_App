@@ -16,3 +16,12 @@ html,
 body{
   background-color: rgb(231, 231, 231);
 }
+/* Sidebar normal */
+.ant-layout .ContainerContent-Page {
+  margin-left: 240px;
+}
+
+/* Sidebar colapsado */
+.ant-layout .sideMenu.collapsed + .ContainerContent-Page {
+  margin-left: 78px;
+}

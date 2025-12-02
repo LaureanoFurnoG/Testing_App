@@ -1,0 +1,38 @@
+.metric-Por {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.CenterMetrics {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+
+.Metrics {
+  display: flex;
+  width: 60%;
+  justify-content: space-between;
+  padding-top: 20px;
+}
+
+.m-p-s {
+  display: flex;
+  width: 100%;
+  gap: 10px;
+}
+
+.mps-right,
+.mps-left {
+  width: 50%;
+}
+.metrics-performance {
+  width: 100%;
+}
+
+.m-p-s h3,
+.m-p-s p {
+  color: black;
+  margin: 5px 0px 5px 0px;
+}

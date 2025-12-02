@@ -2,6 +2,8 @@ import React from 'react';
 import './GroupData.css'
 import CollapseCard from '../../components/CollapseTests/Collapse';
 import { Button, Input, Space, type GetProps } from 'antd';
+import FrontEnd_MetricsCard from '../../components/FrontEnd-Metrics/FrontEnd-Metrics';
+import TableUsers_Group from '../../components/TableUsers-Group/TableUsers-Group';
 type SearchProps = GetProps<typeof Input.Search>;
 const { Search } = Input;
 
@@ -29,7 +31,14 @@ const Users: React.FC = () => {
       </div>
 
       <Input placeholder='URL FRONT END' className='urlfrontinput'/>
-
+      <div className='frontend-endpoints'>
+        <div className='TopMetrics'>
+          <FrontEnd_MetricsCard URL="HOLA"/>
+        </div>
+      </div>
+      <div className='Users-table'>
+        <TableUsers_Group URL='al'/>
+      </div>
     </div>
   );
 };
