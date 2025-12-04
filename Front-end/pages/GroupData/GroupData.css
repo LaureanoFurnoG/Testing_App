@@ -55,7 +55,9 @@
 .Up-Title-search div button:hover {
   background-color: #236d55;
 }
-
+.btn-hover:hover {
+  background-color: #236d55 !important;
+}
 .Up-Title-search div h2 {
   margin: 0px;
 }
@@ -68,11 +70,11 @@
   width: 60%;
 }
 
-.frontend-endpoints{
+.frontend-endpoints {
   margin-top: 20px;
   background-color: white;
 }
-.Users-table{
+.Users-table {
   background-color: white;
   padding: 20px;
   margin-top: 20px;

@@ -7,7 +7,7 @@ import TableUsers_Group from '../../components/TableUsers-Group/TableUsers-Group
 type SearchProps = GetProps<typeof Input.Search>;
 const { Search } = Input;
 
-const Users: React.FC = () => {
+const GroupData: React.FC = () => {
   const onSearch: SearchProps['onSearch'] = (value, _e, info) => console.log(info?.source, value);
 
   return (
@@ -21,12 +21,12 @@ const Users: React.FC = () => {
         <div className='Up-Title-search'>
           <div>
             <h2>Backend endpoints</h2>
-            <button>Create Group</button>
+            <Button className='btn-hover' type="primary">Run All Endpoints</Button>
           </div>
           <Search placeholder="input search endpoint" onSearch={onSearch} className='searchEndpoint' />
         </div>
         <div>
-          <CollapseCard Id={1} Name='sd' Endpoints='sdk' Members='293' />
+          <CollapseCard Id={"1"} Name='sd' Type="POST" HTTPResult={201} urlEndpoint="/example/apiendpoint" />
         </div>
       </div>
 
@@ -43,4 +43,4 @@ const Users: React.FC = () => {
   );
 };
 
-export default Users;
+export default GroupData;

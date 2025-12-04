@@ -1,6 +1,6 @@
 import './style.css'
 import React, { useState } from 'react';
-import { Collapse, Flex, Input, Select } from 'antd';
+import { Collapse, Input, Select } from 'antd';
 import {
   DeleteOutlined,
   SaveOutlined,
@@ -9,20 +9,21 @@ import {
 const { Panel } = Collapse;
 
 interface CollapseCardProps  {
-  Id: number;
+  Id: string;
   Name: string;
-  Endpoints: string;
-  Members: string;
+  Type: string;
+  HTTPResult: number;
+  urlEndpoint: string;
 } 
 const { TextArea } = Input;
 
-const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Endpoints, Members }) => {
+const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Type, HTTPResult, urlEndpoint }) => {
 
   const CustomHeader = () => (
-    <div className='ContainerHeader-Custom'>
+    <div className='ContainerHeader-Custom' id={Id}>
       <div style={{display: 'flex', alignItems: 'center', gap:20}}>
-        <h3>POST</h3>
-        <span>GeeksforGeeks</span>
+        <h3>{Type}</h3>
+        <span>{Name}</span>
       </div>
       <div style={{display:'flex', alignItems: 'center', gap:20, marginRight:20}}>
         <DeleteOutlined onClick={(e) => {
@@ -34,7 +35,7 @@ const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Endpoints, Members
         <PlayCircleOutlined onClick={(e) => {
           e.stopPropagation();
           console.log("Play");}} style={{color:"green"}} />
-        <h3 style={{margin:0}}>201</h3>
+        <h3 style={{margin:0}}>{HTTPResult}</h3>
       </div>
     </div>
   );
@@ -44,7 +45,11 @@ const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Endpoints, Members
   };
 
   const [value, setValue] = useState('');
-  
+  const [Placeholder, _] = useState(`{
+  "Name": "Example",
+  "Password": "example"
+}`)
+
   return (
   <>
     <div className='container-collapses'>
@@ -57,24 +62,27 @@ const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Endpoints, Members
                   style={{padding:20, borderRadius:0, border:"none"}}
                   value={value}
                   onChange={(e) => setValue(e.target.value)}
-                  placeholder="Request"
+                  placeholder={Placeholder}
                   autoSize={{ minRows: 6.2, maxRows: 6.2}}
                 />
               </div>
               <div className="div3"> 
-                <div>
-                  <Input placeholder="Token" />
-                  <Select
-                    defaultValue="Body"
-                    style={{ width: 120 }}
-                    onChange={handleChange}
-                    options={[
-                      { value: 'Body', label: 'Body' },
-                      { value: 'Param', label: 'Param' },
-                    ]}
-                  />
+                <p>Endpoint URL: {urlEndpoint}</p>
+                <div style={{display:"flex", justifyContent:"space-between"}}>
+                  <div>
+                    <Input placeholder="Token" />
+                    <Select
+                      defaultValue="Body"
+                      style={{ width: 120 }}
+                      onChange={handleChange}
+                      options={[
+                        { value: 'Body', label: 'Body' },
+                        { value: 'Param', label: 'Param' },
+                      ]}
+                    />
+                  </div>
+                  <button>Manage Headers</button>
                 </div>
-                <button>Manage Headers</button>
               </div>
               <div className="div4"> </div>
             </div>

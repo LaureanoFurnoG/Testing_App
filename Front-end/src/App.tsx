@@ -2,7 +2,7 @@
 /* pages */
 import GroupsManagement from '../pages/Groups/Groups.tsx'
 import Documentation from '../pages/Documentation/Docuementation.tsx'
-import Users from '../pages/GroupData/GroupData.tsx'
+import GroupData from '../pages/GroupData/GroupData.tsx'
 import Settings from '../pages/Settings/Settings.tsx'
 import Profile from '../pages/Profile/Profile.tsx'
 import Login from '../pages/Login/Login.tsx'
@@ -30,7 +30,7 @@ function App() {
           <Route path="/" element={<Homepage />} />
         <Route path="/" element={<MainLayout />}>
           <Route path="Groups" element={<GroupsManagement />} />
-          <Route path="Users" element={<Users />} />
+          <Route path="GroupData" element={<GroupData />} />
           <Route path="Documentation" element={<Documentation />} />
           <Route path="Settings" element={<Settings />} />
           <Route path="Profile" element={<Profile />} />

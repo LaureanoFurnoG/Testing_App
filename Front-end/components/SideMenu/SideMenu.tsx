@@ -21,7 +21,7 @@ const SideMenu: React.FC = () => {
   };
 
   const groupNavigate = () => {
-    navigate('/Users')
+    navigate('/GroupData')
   };
 
   const DocumentationNavigate = () => {

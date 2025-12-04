@@ -1,0 +1,83 @@
+.ProfileImage{
+    width: 35px;
+    height: 35px;
+    border-radius: 32px;
+}
+.profileData{
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.profileData p{
+    margin: 0;
+}
+.searchUser *{
+    border-radius: 1px !important;
+}
+.deleteUser-icon{
+    font-size: 20px;
+    color: red;
+}
+
+.headerUsers {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.headerTitle {
+  font-weight: bold;
+}
+
+.headerActions {
+  display: flex;
+  gap: 10px;
+}
+
+.addMemberBtn {
+  background: #43b690;
+  border: none;
+  width: 130px;
+  border-radius: 5px;
+  color: #fff;
+  cursor: pointer;
+  padding: 6px 0;
+}
+
+.divider {
+  margin: 0 !important;
+}
+
+.profileData {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ProfileImage {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  background: #ddd;
+}
+
+.deleteCell {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding-right: 15px;
+}
+
+.deleteUser-icon {
+  font-size: 20px;
+  color: red;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.deleteUser-icon:hover {
+  opacity: 0.7;
+}
