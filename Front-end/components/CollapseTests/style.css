@@ -1,0 +1,107 @@
+.ant-collapse-header {
+  flex-direction: row-reverse;
+  border: none !important;
+}
+.ant-collapse-header {
+  background-color: rgb(255, 255, 255) !important;
+}
+.ant-collapse {
+  border: none !important;
+  border-radius: 0px !important;
+}
+
+.backend-endpoints h3 {
+  color: black !important;
+  margin: 0;
+}
+
+.ant-collapse-header svg {
+  width: 22px;
+  height: 22px;
+}
+.ant-collapse-content-box {
+  padding: 0px !important;
+}
+.container-collapses {
+  display: "block";
+  width: "100%";
+  padding-top: 30px;
+  overflow-y: auto;
+  max-height: 600px;
+}
+
+.parent {
+  display: grid;
+  height: 300px;
+  grid-template-columns: 0.1fr 0.8fr 1fr;
+  grid-template-rows: repeat(3, 1fr);
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+}
+
+.div1 {
+  grid-area: 1 / 1 / 4 / 2;
+}
+.div2 {
+  grid-area: 2 / 2 / 4 / 3;
+  border-left: 1px solid rgba(128, 128, 128, 0.466);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.466);
+}
+.div3 {
+  grid-area: 1 / 2 / 2 / 4;
+  justify-content: space-between;
+  padding: 20px;
+  align-items: center;
+  border-bottom: 1px solid rgba(128, 128, 128, 0.466);
+  border-left: 1px solid rgba(128, 128, 128, 0.466);
+  border-right: 1px solid rgba(128, 128, 128, 0.466);
+}
+.div3 div {
+  display: flex;
+  gap: 10px;
+  height: 35px;
+}
+.div3 input,
+.div3 .ant-select-selector {
+  border-radius: 1px;
+}
+
+.div3 button {
+  background-color: #58bd9f;
+  border: none;
+  color: white;
+  border-radius: 5px;
+  width: 120px;
+  height: 35px;
+  box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.438);
+  cursor: pointer;
+  transition: all 1s;
+}
+
+.div3 button:hover {
+  background-color: #236d55;
+}
+
+.div4 {
+  grid-area: 2 / 3 / 4 / 4;
+  border-left: 1px solid rgba(128, 128, 128, 0.466);
+  border-right: 1px solid rgba(128, 128, 128, 0.466);
+  border-bottom: 1px solid rgba(128, 128, 128, 0.466);
+}
+
+.ContainerHeader-Custom {
+  display: flex;
+  align-items: center !important;
+  gap: 8px;
+  justify-content: space-between !important;
+  overflow-x: auto !important;
+}
+
+@media (max-width: 400px) {
+  .ant-collapse-expand-icon {
+    padding: 0 !important;
+  }
+  .ContainerHeader-Custom {
+    max-width: 200px !important;
+  }
+}

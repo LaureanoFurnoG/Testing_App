@@ -14,5 +14,5 @@ func main(){
 	initializers.DB.AutoMigrate(&models.Backendtests{})
 	initializers.DB.AutoMigrate(&models.Groups{})
 	initializers.DB.AutoMigrate(&models.GroupsRelation{})
-	initializers.DB.AutoMigrate(&models.Saveendpointresult{}) //migrate schemas
+	initializers.DB.AutoMigrate(&models.Saveendpointresult{}) 
 }

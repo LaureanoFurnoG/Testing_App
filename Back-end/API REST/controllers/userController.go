@@ -5,7 +5,10 @@ import (
 	"Go-API-T/middlewere"
 	"Go-API-T/services"
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
 	"math/big"
+	"strings"
 
 	"Go-API-T/initializers"
 	"Go-API-T/models"
@@ -24,10 +27,8 @@ import (
 	//"github.com/golang-jwt/jwt/v5"
 	//"golang.org/x/crypto/bcrypt"
 	//"strconv"
-
 )
-
-var otpStore = make(map[string]string)
+var otpStore = make(map[string]any)
 
 
 // function to save all endpoints in a "router".
@@ -104,8 +105,7 @@ func (h *HandlerAPI) register(c *gin.Context) {
 }
 
 type SignInResponse struct {
-	AccessToken  string
-	RefreshToken string
+	Token  any
 }
 
 func (h *HandlerAPI) login(c *gin.Context) {
@@ -136,9 +136,15 @@ func (h *HandlerAPI) login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send OTP"})
 		return
 	}
-
-	otpStore[jsonData.Email+"_AccessToken"] = jwt.AccessToken
-	otpStore[jsonData.Email+"_RefreshToken"] = jwt.RefresToken
+	profile, err := DecodeJWTPayload(jwt.IDToken)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "error": "cannot decode token",
+        })
+        return
+    }
+	jwt.Profile = profile
+	otpStore[jsonData.Email+"_JWT"] = jwt
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Code sended",
@@ -165,16 +171,13 @@ func (h *HandlerAPI) Verify2Step(c *gin.Context) {
 		return
 	}
 
-	AccessToken := otpStore[body.Email+"_AccessToken"]
-	RefreshToken := otpStore[body.Email+"_RefreshToken"]
+	Token := otpStore[body.Email+"_JWT"]
 
 	delete(otpStore, body.Email)
-	delete(otpStore, body.Email+"_AccessToken")
-	delete(otpStore, body.Email+"_RefreshToken")
+	delete(otpStore, body.Email+"_JWT")
 
 	signInResp := SignInResponse{
-		AccessToken:  AccessToken,
-		RefreshToken: RefreshToken,
+		Token:  Token,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -187,196 +190,29 @@ type MyKeycloakClient struct {
 	*keycloak.ClientKeycloak
 }
 
+//decode payload to add profile in the token: 
+func DecodeJWTPayload(token string) (map[string]interface{}, error) {
+    parts := strings.Split(token, ".")
+    if len(parts) < 2 {
+        return nil, fmt.Errorf("invalid token")
+    }
 
+    payloadStr := parts[1]
 
-/*
-	func register(c *gin.Context) {
-		var jsonData struct {
-			Name     string
-			Lastname string
-			Email    string
-			Password string
-		} //create body request
+    padding := len(payloadStr) % 4
+    if padding > 0 {
+        payloadStr += strings.Repeat("=", 4-padding)
+    }
 
-		if c.ShouldBindJSON(&jsonData) != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Failed to read body",
-			})
-		}
+    payloadBytes, err := base64.URLEncoding.DecodeString(payloadStr)
+    if err != nil {
+        return nil, err
+    }
 
-		hash, err := bcrypt.GenerateFromPassword([]byte(jsonData.Password), 10)
+    var payload map[string]interface{}
+    if err := json.Unmarshal(payloadBytes, &payload); err != nil {
+        return nil, err
+    }
 
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Failed to hash password"})
-			return
-		}
-
-		user := models.Users{Name: jsonData.Name, Lastname: jsonData.Lastname, Email: jsonData.Email, Password: string(hash)}
-		userExist := initializers.DB.First(&user, "email = ?", jsonData.Email)
-
-		if userExist.Error == nil {
-
-c.JSON(409, gin.H{"error": "This email already in use"})
-
-			return
-		}
-
-		createU := initializers.DB.Create(&user) //create user
-
-		if createU.Error != nil {
-			c.JSON(400, gin.H{"error": createU.Error})
-			return
-		}
-
-		c.JSON(http.StatusCreated, gin.H{"Message": "User created"})
-	}
-
-	func login(c *gin.Context) {
-		var jsonData struct {
-			Email    string
-			Password string
-		}
-
-		if c.ShouldBindJSON(&jsonData) != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Failed to read body",
-			})
-			return
-		}
-		var user models.Users
-		userFound := initializers.DB.First(&user, "email = ?", jsonData.Email)
-
-		if userFound.Error != nil {
-			c.JSON(404, gin.H{
-				"error": "User not found",
-			})
-			return
-		}
-
-		comparePassword := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(jsonData.Password))
-		if comparePassword != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Password or email not match",
-			})
-			return
-		}
-		//generate code
-		var code2step string
-		for i := 1; i <= 5; i++ {
-			code2step += fmt.Sprintf("%d", rand.Intn(10))
-		}
-		fmt.Println(code2step)
-		//generate jwt for TwoStep code
-		tokenCodeTwo_STEP := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sub": []interface{}{user.Email, code2step},
-			"exp": time.Now().Add(time.Minute * 2).Unix(),
-		})
-
-		tokenString, err := tokenCodeTwo_STEP.SignedString([]byte(os.Getenv("SECRET_TOKEN_KEY")))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Failed to create token",
-			})
-			return
-		}
-
-		c.JSON(http.StatusOK, gin.H{
-			"token": tokenString,
-		})
-	}
-
-func twoStep(c *gin.Context) {
-	var jsonData struct {
-		Code           string
-		TokenEncrypter string
-	}
-
-	if c.ShouldBindJSON(&jsonData) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read body",
-		})
-		return
-	}
-	partsToken := strings.Split(jsonData.TokenEncrypter, ".")
-
-	if len(partsToken) < 2 {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Token malformed",
-		})
-	}
-
-	payloadBase64 := partsToken[1]
-
-	if l := len(payloadBase64) % 4; l > 0 {
-		payloadBase64 += strings.Repeat("=", 4-l)
-	}
-
-	payloadBytes, err := base64.URLEncoding.DecodeString(payloadBase64)
-	if err != nil {
-		fmt.Println("Error decoding:", err)
-		return
-	}
-
-	var payload map[string]interface{}
-
-	err = json.Unmarshal(payloadBytes, &payload)
-
-	if err != nil {
-		fmt.Println("Error parsing to JSON:", err)
-		return
-	}
-
-	//eval if the token was expired
-	if expVal, ok := payload["exp"].(float64); ok {
-		expTime := time.Unix(int64(expVal), 0)
-		if time.Now().After(expTime) {
-			c.JSON(http.StatusUnauthorized, gin.H{
-				"error": "Token expired",
-			})
-			return
-		}
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid or missing expiration in token",
-		})
-		return
-	}
-
-	var CodeDecrypter string
-
-	if sub, ok := payload["sub"].([]interface{}); ok && len(sub) >= 2 {
-		if code, ok := sub[1].(string); ok {
-			CodeDecrypter = code
-		}
-	} else {
-		fmt.Println("'sub' not is a string")
-	}
-
-	var user models.Users
-	if strings.TrimSpace(CodeDecrypter) == strings.TrimSpace(jsonData.Code) {
-		tokenCodeTwo_STEP := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-			"sub": []interface{}{user.Email, user.ID},
-			"exp": time.Now().Add(time.Minute * 2).Unix(),
-		})
-
-		tokenString, err := tokenCodeTwo_STEP.SignedString([]byte(os.Getenv("SECRET_TOKEN_KEY")))
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"error": "Failed to create token",
-			})
-			return
-		}
-		c.SetSameSite(http.SameSiteLaxMode)
-		c.SetCookie("Authorization", tokenString, 3600*24*30, "", "", false, true) //create cookie
-
-	} else {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Code not match or expired",
-		})
-		return
-	}
-
-	//la idea: decodificar el token, tomar el email de usuario, verificar que el codigo sea igual que el encriptado y devolver token de usuario con id, email
-	//userFound := initializers.DB.First(&user, "email = ?", jsonData.Email)
+    return payload, nil
 }
-*/

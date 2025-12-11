@@ -9,7 +9,7 @@ export default function MainLayout() {
     <Layout style={{ height:'100%' }}>
       <SideMenu />
       <Layout className='ContainerContent-Page' style={{ padding: '24px', height:'100%' }}>
-        <Content style={{ background: '#fff', borderRadius: 4 }}>
+        <Content>
           <Outlet />
         </Content>
       </Layout>

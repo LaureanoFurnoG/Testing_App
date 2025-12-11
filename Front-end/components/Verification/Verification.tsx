@@ -2,9 +2,9 @@ import './style.css'
 import React, {} from 'react';
 import { Input, message } from 'antd';
 import type { GetProps } from 'antd';
-import axiosInstance from '../../axios.js';
+import axiosInstance from '../../axios';
 import { useNavigate } from 'react-router-dom';
-
+import { useAuth } from '../../auth/AuthProvider';
 
 interface CardType {
   CardType: (val: string) => void;
@@ -13,27 +13,27 @@ interface CardType {
 type OTPProps = GetProps<typeof Input.OTP>;
 
 const VerificatorAuth: React.FC <CardType> = ({ CardType }) => {
-  const [messageApi, contextHolder] = message.useMessage();
+  const [messageApi,] = message.useMessage();
   let navigate = useNavigate()
+  const { setToken } = useAuth();
 
-  const dashboardNavigate = () => {
-    navigate('/Dashboard')
+  const groupsNavigate = () => {
+    navigate('/Groups')
   };
   const onChange: OTPProps['onChange'] = async (text) => {
     try {
       const value = {
         email: localStorage.getItem('email'),
-        encriptedCode: localStorage.getItem('codeEncripted'),
-        code: text
+        OTP: text
       }
-      const response = await axiosInstance.post("/login/authenticationCode", value);
-      localStorage.setItem('token', response.data.token)
+      const response = await axiosInstance.post("/api/user/verify", value);
+      sessionStorage.setItem("Token", JSON.stringify(response.data.data.Token));
+      setToken(response.data.data.Token);
+
       localStorage.removeItem('email')
-      localStorage.removeItem('codeEncripted')
-      dashboardNavigate()
+      groupsNavigate()
       
     } catch (error: any) {
-      console.log(error)
       errorM(error)
     }
   };
@@ -57,7 +57,7 @@ const VerificatorAuth: React.FC <CardType> = ({ CardType }) => {
           <div className='codeBox'>
             <Input.OTP  formatter={(str) => str.toUpperCase()} {...sharedProps} />
           </div>
-          <button className='loginRedirect' onClick={() => CardType("login")}>Go to the <span style={{color:"#916BF3"}}>Login</span></button>
+          <button className='loginRedirect' onClick={() => CardType("login")}>Go to the <span style={{color:"#236d55"}}>Login</span></button>
         </div>
     </>
   );

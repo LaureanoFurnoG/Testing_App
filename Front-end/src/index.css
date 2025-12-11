@@ -1,12 +1,27 @@
 /* index.css */
-body, html, #root {
+body,
+html,
+#root {
   margin: 0;
   padding: 0;
   height: 100%;
 }
-.ContainerMenus{
+.ContainerMenus {
   position: fixed;
   display: flex !important;
   height: 100vh;
   flex-direction: row-reverse;
+}
+
+body{
+  background-color: rgb(231, 231, 231);
+}
+/* Sidebar normal */
+.ant-layout .ContainerContent-Page {
+  margin-left: 240px;
+}
+
+/* Sidebar colapsado */
+.ant-layout .sideMenu.collapsed + .ContainerContent-Page {
+  margin-left: 78px;
 }

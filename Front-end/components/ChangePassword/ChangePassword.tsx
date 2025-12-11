@@ -2,7 +2,6 @@ import './style.css'
 import React, {useRef, useState} from 'react';
 import { Button, Form, Input, message } from 'antd';
 import type { FormItemProps } from 'antd';
-import MicrosoftButton from '../MicrosoftLogin/MicrosoftLogin'
 
 const MyFormItemContext = React.createContext<(string | number)[]>([]);
 
@@ -53,13 +52,12 @@ const ChangePassword: React.FC <ChangePassword> = ({ CardType }) => {
                     <Input required={true} type='password' style={{height:54}} placeholder="New Password" />
                 </MyFormItem>
 
-                <Button style={{height:54, backgroundColor:'#916BF3'}} type="primary" htmlType="submit">
+                <Button style={{height:54, backgroundColor:'#236d55'}} type="primary" htmlType="submit">
                     CHANGE PASSWORD
                 </Button>
 
             </Form>
-            <button className='goToLogin' onClick={() => CardType("login")}>Go to the <span style={{color:"#916BF3"}}>Login</span></button>
-            <MicrosoftButton onClick={() => console.log("Login con Microsoft")}/>
+            <button className='goToLogin' onClick={() => CardType("login")}>Go to the <span style={{color:"#236d55"}}>Login</span></button>
         </div>
     </>
   );

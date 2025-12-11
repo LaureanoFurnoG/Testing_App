@@ -4,7 +4,7 @@
   padding-left: 24px;
   padding-top: 10px;
   padding-bottom: 10px;
-  border-bottom: 1px solid rgba(216, 214, 214, 0.75);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.897);
 }
 .disableMenu-label {
   padding-top: 10px;
@@ -15,17 +15,27 @@
   position: absolute;
   bottom: 0;
   padding: 16px;
-  border-top: 1px solid rgba(216, 214, 214, 0.75);
+  border-top: 1px solid rgba(255, 255, 255, 0.897);
   display: flex;
   align-items: center;
   cursor: pointer;
 }
 
 .sideMenu {
-  background-color: white;
-  border-right: 1px solid rgba(216, 214, 214, 0.75);
+  position: fixed;
+  height: 100%;
+  z-index: 999;
+  background-color: #236d55;
+  border-right: 1px solid rgba(255, 255, 255, 0.897);
 }
-
+.sideMenu li * {
+  color: rgb(255, 255, 255) !important;
+}
+.sideMenu .ant-layout-sider,
+.sideMenu .ant-menu {
+  background-color: #236d55 !important;
+  border: none !important;
+}
 .sideMenu.collapsed .dataUser-sideMenu {
   width: 80px;
 }
@@ -33,8 +43,11 @@
 .sideMenu:not(.collapsed) .dataUser-sideMenu {
   width: 240px;
 }
-
-@media (max-width: 402px) {
+:where(.css-dev-only-do-not-override-ut69n1).ant-menu-light
+  .ant-menu-item-selected {
+  background-color: #4dcca4;
+}
+@media (max-width: 586px) {
   .sideMenu {
     position: fixed;
   }
@@ -46,10 +59,14 @@
   .sideMenu.collapsed {
     position: fixed;
     width: 100vw !important;
+    border: none !important;
+  }
+  .sideMenu.collapsed .SideMenu-activeButton{
+    border: none;
   }
   .sideMenu:not(.collapsed) {
     height: 100% !important;
-    background-color: white;
+    background-color: #236d55;
     border-right: 1px solid rgb(240, 240, 240);
   }
   .sideMenu .ant-menu-vertical {

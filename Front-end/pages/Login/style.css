@@ -3,7 +3,7 @@
 }
 
 .ImgBanner-Login {
-  background-color: #45357f;
+  background-color: #236d55;
   display: flex;
   width: 55%;
   align-items: center;
@@ -42,7 +42,7 @@ h3 {
 }
 
 .ImgBanner-Login span {
-  color: #a69ada;
+  color: #47daab;
 }
 
 .CardLogin-container {

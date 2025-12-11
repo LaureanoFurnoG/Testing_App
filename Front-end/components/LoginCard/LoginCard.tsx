@@ -2,9 +2,8 @@ import './style.css'
 import React, {useRef, useState} from 'react';
 import { Button, Form, Input, message } from 'antd';
 import type { FormItemProps } from 'antd';
-import MicrosoftButton from '../MicrosoftLogin/MicrosoftLogin'
 import ReCAPTCHA from "react-google-recaptcha";
-import axiosInstance from '../../axios.js';
+import axiosInstance from '../../axios';
 
 const MyFormItemContext = React.createContext<(string | number)[]>([]);
 
@@ -38,11 +37,11 @@ interface LoginCardProps {
 
 const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
     const captcha = useRef<ReCAPTCHA | null>(null);
-    const [validSession, setValidSession] = useState(false)
+    const [, setValidSession] = useState(false)
     const [captchaValid, setCaptchaValid] = useState<boolean | null>(null)
     const [, setUserValid] = useState(false)
-    const [responseForgotPASS, setResponseSend] = useState("")
-    const [messageApi, contextHolder] = message.useMessage();
+    const [messageApi, ] = message.useMessage();
+    const [loading, setLoading] = useState(false);
 
     function onChange() {
         if (captcha.current.getValue()) {
@@ -51,28 +50,35 @@ const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
     }
 
     const onFinish = async (value: { email: string; password: string }) => {
-        try {
-            const captchaValue = captcha.current.getValue();
-            if (captchaValue) {
-                setUserValid(true)
-                setCaptchaValid(true)
-                const response = await axiosInstance.post("/login", value);
-                setValidSession(true)
-                console.log(response)
-                localStorage.setItem('codeEncripted', response.data.code)
-                localStorage.setItem('email', value.email)
+    setLoading(true);
 
-                CardType("verify")
-            } else {
-                setUserValid(false)
-                setCaptchaValid(false)
-            }
-
-        } catch (error: any) {
-            console.log(error)
-            errorM(error)
+    try {
+        const captchaValue = captcha.current.getValue();
+        if (!captchaValue) {
+            setUserValid(false);
+            setCaptchaValid(false);
+            setLoading(false);
+            return; 
         }
+        setUserValid(true);
+        setCaptchaValid(true);
+        try {
+            const response = await axiosInstance.post("/api/user/login", value);
+            setValidSession(true);
+            localStorage.setItem('email', value.email);
+            CardType("verify");
+        } catch (error: any) {
+            errorM(error); 
+        }
+
+    } catch (error: any) {
+        setLoading(false);
+        errorM(error);
+    } finally {
+        setLoading(false); 
+    }
     };
+
 
     const errorM = (mText: String) => {
         messageApi.open({
@@ -92,13 +98,11 @@ const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
                     <Input required={true} type='password' style={{height:54}} placeholder="Password" />
                 </MyFormItem>
 
-                <Button style={{height:54, backgroundColor:'#916BF3'}} type="primary" htmlType="submit">
+                <Button loading={loading}  style={{height:54, backgroundColor:'#236d55'}} type="primary" htmlType="submit">
                     LOGIN
                 </Button>
             </Form>
             <button className='forgotPasswordBTN' onClick={() => CardType("change")}>Forgot Passoword?</button>
-            <MicrosoftButton onClick={() => console.log("Login con Microsoft")}/>
-
             <div className="captcha-container">
                 <ReCAPTCHA className='captchaD'
                 ref={captcha}

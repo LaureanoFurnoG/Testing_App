@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Menu, Dropdown, Avatar, type MenuProps  } from 'antd';
 import {
-  DashboardOutlined,
-  PieChartOutlined,
-  UserAddOutlined,
+  FileDoneOutlined,
   UsergroupAddOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
-import imageLogo from '../../assets/images/Schub_logo.webp'
 import './SideMenu.css'
 const { Sider } = Layout;
 
@@ -19,15 +16,16 @@ const SideMenu: React.FC = () => {
   const location = useLocation();
   let navigate = useNavigate()
 
-  const dashboardNavigate = () => {
-    navigate('/Dashboard')
-  };
-  const usersNavigate = () => {
-    navigate('/Users')
+  const manageGroupsNavigate = () => {
+    navigate('/Groups')
   };
 
-  const ClientsManagementNavigate = () => {
-    navigate('/ClientManagement')
+  const groupNavigate = () => {
+    navigate('/GroupData')
+  };
+
+  const DocumentationNavigate = () => {
+    navigate('/Documentation')
   };
    const SettingsNavigate = () => {
     navigate('/Settings')
@@ -35,17 +33,18 @@ const SideMenu: React.FC = () => {
   const ProfileNavigate = () => {
     navigate('/Profile')
   }
-  const LogOut = () => {
-    localStorage.removeItem('token')
-    navigate('/login')
-  }
+  const logout = () => {
+    sessionStorage.clear();
+    localStorage.clear();
+    window.location.href = '/login';
+  };
   const userMenu = (
     <Menu className='usersOptionMenu'
       items={[
         { key: 'profile', label: 'Profile', onClick: ProfileNavigate },
         { key: 'settings', label: 'Settings', onClick: SettingsNavigate },
         { type: 'divider' },
-        { key: 'logout', label: 'Logout', onClick: LogOut },
+        { key: 'logout', label: 'Logout', onClick: logout },
       ]}
     />
   );
@@ -54,48 +53,41 @@ const SideMenu: React.FC = () => {
   const items: MenuItem[] = [
   {
     key: '1',
-    label: 'Dashboard',
-    icon: <DashboardOutlined />,
-    onClick: dashboardNavigate
-  },
-  {
-    key: '2',
-    label: 'Users',
+    label: 'Groups',
     icon: <UsergroupAddOutlined />,
-    onClick: usersNavigate
-  },
-  {
-    key: '3',
-    label: 'Clients',
-    icon: <PieChartOutlined />,
     children: [
       //i think that we can use a loop and travel the clients table, find the name and insert in the label
       {
         key: 'g1',
-        label: 'Schub',
-        onClick: usersNavigate
+        label: 'Manage Groups',
+        onClick: manageGroupsNavigate
+      },
+      {
+        key: 'g2',
+        label: 'G_Name',
+        onClick: groupNavigate
       },
     ],
   },
   {
-    key: '4',
-    label: 'Clients Management',
-    icon: <UserAddOutlined />,
-    onClick: ClientsManagementNavigate
+    key: '2',
+    label: 'Documentation',
+    icon: <FileDoneOutlined />,
+    onClick: DocumentationNavigate
   },
   ]
 
   useEffect(() =>{
    const pathname = location.pathname
    switch(true){
-    case pathname.includes("Dashboard"):
-      setLocationApp(['1'])
+    case pathname.includes("Groups"):
+      setLocationApp(['0'])
       break;
     case pathname.includes("Users"):
-      setLocationApp(['2'])
+      setLocationApp(['1'])
       break;
-    case pathname.includes("ClientManagement"):
-      setLocationApp(['4'])
+    case pathname.includes("Documentation"):
+      setLocationApp(['2'])
       break;
     default:
         setLocationApp(['0']);
@@ -118,9 +110,9 @@ const SideMenu: React.FC = () => {
       <div onClick={() => setCollapsed(!collapsed)} className='SideMenu-activeButton'>
         {collapsed ?
           <div className='disableMenu-label'>
-            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" /></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#ffffffff"><path d="M120-240v-80h720v80H120Zm0-200v-80h720v80H120Zm0-200v-80h720v80H120Z" /></svg>
           </div>
-          : <img className='img_LogoSchub' src={imageLogo} alt="" />}
+          : <h1 style={{margin: 10, marginLeft: 0}}>TESTING APP</h1>}
       </div>
       <Menu
         mode="inline"
@@ -142,8 +134,8 @@ const SideMenu: React.FC = () => {
               icon={<UserOutlined />} />
             {collapsed ? '' :
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <p style={{ marginLeft: 8, marginBottom: 1, fontWeight: 'bold', fontSize: 14 }}>Serati Ma</p>
-                <p style={{ marginLeft: 8, marginTop: 1, fontSize: 12, color: 'gray' }}>Serati@ma.com</p>
+                <p style={{ marginLeft: 8, marginBottom: 1, fontWeight: 'bold', fontSize: 14, color:'white'}}>Serati Ma</p>
+                <p style={{ marginLeft: 8, marginTop: 1, fontSize: 12, color: '#ffffffda' }}>Serati@ma.com</p>
               </div>}
           </div>
         </Dropdown>

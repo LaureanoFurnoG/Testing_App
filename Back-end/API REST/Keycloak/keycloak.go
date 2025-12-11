@@ -1,4 +1,5 @@
 package keycloak
+
 import (
 	"context"
 	"crypto/rand"
@@ -22,9 +23,16 @@ type ClientKeycloak struct {
 }
 
 type JWT struct {
-	AccessToken string
-	RefresToken string
-	ExpiredIn   int
+	AccessToken      string `json:"access_token,omitempty"`
+	ExpiresIn        int    `json:"expires_in,omitempty"`
+	RefreshExpiresIn int    `json:"refresh_expires_in,omitempty"`
+	RefreshToken     string `json:"refresh_token,omitempty"`
+	TokenType        string `json:"token_type,omitempty"`
+	IDToken          string `json:"id_token,omitempty"`
+	SessionState     string `json:"session_state,omitempty"`
+	Scope            string `json:"scope,omitempty"`
+
+	Profile map[string]interface{} `json:"profile,omitempty"`
 }
 
 func NewClientKeycloak() *ClientKeycloak {
@@ -46,9 +54,13 @@ func (c *ClientKeycloak) Login(ctx context.Context, email, password string) (*JW
 		return nil, err
 	}
 	cJWT := JWT{
-		AccessToken: jwt.AccessToken,
-		RefresToken: jwt.RefreshToken,
-		ExpiredIn:   jwt.ExpiresIn,
+		AccessToken:      jwt.AccessToken,
+		RefreshToken:     jwt.RefreshToken,
+		ExpiresIn:        jwt.ExpiresIn,
+		RefreshExpiresIn: jwt.RefreshExpiresIn,
+		TokenType:        jwt.TokenType,
+		IDToken:          jwt.IDToken,
+		SessionState:     jwt.SessionState,
 	}
 	return &cJWT, nil
 }
@@ -285,5 +297,3 @@ func (c *ClientKeycloak) GetGroups(ctx context.Context, accessToken, userID stri
 	}
 	return groups, nil
 }
-
-

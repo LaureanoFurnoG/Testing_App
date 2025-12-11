@@ -61,8 +61,9 @@ services:
     deploy: 
       mode: replicated
       replicas: 1
-    volumes: 
-      - ./db-data/rabbitmq/:/var/lib/rabbitmq/
+    volumes:
+      - /home/laure/rabbitmq-data:/var/lib/rabbitmq/
+
 volumes:
   postgres_data:
   pgdata:
