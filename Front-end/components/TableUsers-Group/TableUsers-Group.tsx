@@ -2,8 +2,9 @@ import "./style.css";
 import React from "react";
 import axiosInstance from "../../axios";
 import { Divider, Table, type GetProps } from "antd";
-import { Input, TableColumnsType } from "antd";
+import { Input, type TableColumnsType } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
+import AddUserModal from "../AddUser-Modal/AddUser-Modal";
 
 const { Search } = Input;
 
@@ -80,10 +81,10 @@ export default class TableUsers_Group extends React.Component<
           <span className="headerTitle">User</span>
 
           <div className="headerActions">
-            <button className="addMemberBtn">Add Member</button>
+            <AddUserModal />
 
             <Search
-              placeholder="Search user"
+              placeholder="Search user by Name"
               onSearch={this.onSearch}
               className="searchUser"
             />

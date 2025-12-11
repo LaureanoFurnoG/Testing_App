@@ -33,17 +33,18 @@ const SideMenu: React.FC = () => {
   const ProfileNavigate = () => {
     navigate('/Profile')
   }
-  const LogOut = () => {
-    localStorage.removeItem('token')
-    navigate('/login')
-  }
+  const logout = () => {
+    sessionStorage.clear();
+    localStorage.clear();
+    window.location.href = '/login';
+  };
   const userMenu = (
     <Menu className='usersOptionMenu'
       items={[
         { key: 'profile', label: 'Profile', onClick: ProfileNavigate },
         { key: 'settings', label: 'Settings', onClick: SettingsNavigate },
         { type: 'divider' },
-        { key: 'logout', label: 'Logout', onClick: LogOut },
+        { key: 'logout', label: 'Logout', onClick: logout },
       ]}
     />
   );

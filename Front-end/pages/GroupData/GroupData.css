@@ -14,10 +14,16 @@
 }
 
 .inputEndpoint {
-  width: 60%;
+  width: 100%;
+  gap: 50px;
+  display: flex;
+  justify-content: space-between;
 }
 .inputEndpoint * {
   border-radius: 2px !important;
+}
+.inputEndpoint input{
+  width: 50%;
 }
 .backend-endpoints {
   background-color: white;
@@ -65,9 +71,18 @@
   overflow-x: auto;
 }
 .urlfrontinput {
-  margin-top: 20px;
   border-radius: 2px;
-  width: 60%;
+}
+.container-group{
+  padding-bottom: 30px;
+}
+.containerURLINPUT{
+  width: 50%;
+  margin-top: 20px;
+}
+
+.containerURLINPUT button{
+  border-radius: 0 !important;
 }
 
 .frontend-endpoints {

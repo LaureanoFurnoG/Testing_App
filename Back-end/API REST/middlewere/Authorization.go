@@ -66,9 +66,7 @@ func (m Middleware) RequireAuth() gin.HandlerFunc {
 			}
 
 			c.Writer.Header().Set("Authorization", "Bearer "+newToken.AccessToken)
-
 			c.Request.Header.Set("Access-Token", newToken.AccessToken) //temporal
-
 			c.Header("Refresh-Token", newToken.RefreshToken)
 
 			tokenString = newToken.AccessToken

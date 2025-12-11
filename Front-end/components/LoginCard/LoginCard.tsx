@@ -41,6 +41,7 @@ const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
     const [captchaValid, setCaptchaValid] = useState<boolean | null>(null)
     const [, setUserValid] = useState(false)
     const [messageApi, ] = message.useMessage();
+    const [loading, setLoading] = useState(false);
 
     function onChange() {
         if (captcha.current.getValue()) {
@@ -49,28 +50,35 @@ const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
     }
 
     const onFinish = async (value: { email: string; password: string }) => {
-        try {
-            const captchaValue = captcha.current.getValue();
-            if (captchaValue) {
-                setUserValid(true)
-                setCaptchaValid(true)
-                const response = await axiosInstance.post("/login", value);
-                setValidSession(true)
-                console.log(response)
-                localStorage.setItem('codeEncripted', response.data.code)
-                localStorage.setItem('email', value.email)
+    setLoading(true);
 
-                CardType("verify")
-            } else {
-                setUserValid(false)
-                setCaptchaValid(false)
-            }
-
-        } catch (error: any) {
-            console.log(error)
-            errorM(error)
+    try {
+        const captchaValue = captcha.current.getValue();
+        if (!captchaValue) {
+            setUserValid(false);
+            setCaptchaValid(false);
+            setLoading(false);
+            return; 
         }
+        setUserValid(true);
+        setCaptchaValid(true);
+        try {
+            const response = await axiosInstance.post("/api/user/login", value);
+            setValidSession(true);
+            localStorage.setItem('email', value.email);
+            CardType("verify");
+        } catch (error: any) {
+            errorM(error); 
+        }
+
+    } catch (error: any) {
+        setLoading(false);
+        errorM(error);
+    } finally {
+        setLoading(false); 
+    }
     };
+
 
     const errorM = (mText: String) => {
         messageApi.open({
@@ -90,7 +98,7 @@ const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
                     <Input required={true} type='password' style={{height:54}} placeholder="Password" />
                 </MyFormItem>
 
-                <Button style={{height:54, backgroundColor:'#236d55'}} type="primary" htmlType="submit">
+                <Button loading={loading}  style={{height:54, backgroundColor:'#236d55'}} type="primary" htmlType="submit">
                     LOGIN
                 </Button>
             </Form>

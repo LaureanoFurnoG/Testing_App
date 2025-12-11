@@ -1,23 +1,23 @@
-.ProfileImage{
-    width: 35px;
-    height: 35px;
-    border-radius: 32px;
+.ProfileImage {
+  width: 35px;
+  height: 35px;
+  border-radius: 32px;
 }
-.profileData{
-    display: flex;
-    align-items: center;
-    gap: 20px;
+.profileData {
+  display: flex;
+  align-items: center;
+  gap: 20px;
 }
 
-.profileData p{
-    margin: 0;
+.profileData p {
+  margin: 0;
 }
-.searchUser *{
-    border-radius: 1px !important;
+.searchUser * {
+  border-radius: 1px !important;
 }
-.deleteUser-icon{
-    font-size: 20px;
-    color: red;
+.deleteUser-icon {
+  font-size: 20px;
+  color: red;
 }
 
 .headerUsers {
@@ -36,16 +36,18 @@
   gap: 10px;
 }
 
-.addMemberBtn {
+.addMemberBtn, .addEndpointBtn {
   background: #43b690;
   border: none;
   width: 130px;
   border-radius: 5px;
   color: #fff;
   cursor: pointer;
-  padding: 6px 0;
+  padding: 0px 12px;
 }
-
+.addMemberBtn:hover, .addEndpointBtn:hover {
+  background-color: #236d55 !important;
+}
 .divider {
   margin: 0 !important;
 }

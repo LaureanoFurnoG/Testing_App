@@ -5,7 +5,10 @@ import (
 	"Go-API-T/middlewere"
 	"Go-API-T/services"
 	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
 	"math/big"
+	"strings"
 
 	"Go-API-T/initializers"
 	"Go-API-T/models"
@@ -24,10 +27,8 @@ import (
 	//"github.com/golang-jwt/jwt/v5"
 	//"golang.org/x/crypto/bcrypt"
 	//"strconv"
-
 )
-
-var otpStore = make(map[string]string)
+var otpStore = make(map[string]any)
 
 
 // function to save all endpoints in a "router".
@@ -104,8 +105,7 @@ func (h *HandlerAPI) register(c *gin.Context) {
 }
 
 type SignInResponse struct {
-	AccessToken  string
-	RefreshToken string
+	Token  any
 }
 
 func (h *HandlerAPI) login(c *gin.Context) {
@@ -136,9 +136,15 @@ func (h *HandlerAPI) login(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to send OTP"})
 		return
 	}
-
-	otpStore[jsonData.Email+"_AccessToken"] = jwt.AccessToken
-	otpStore[jsonData.Email+"_RefreshToken"] = jwt.RefresToken
+	profile, err := DecodeJWTPayload(jwt.IDToken)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{
+            "error": "cannot decode token",
+        })
+        return
+    }
+	jwt.Profile = profile
+	otpStore[jsonData.Email+"_JWT"] = jwt
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Code sended",
@@ -165,16 +171,13 @@ func (h *HandlerAPI) Verify2Step(c *gin.Context) {
 		return
 	}
 
-	AccessToken := otpStore[body.Email+"_AccessToken"]
-	RefreshToken := otpStore[body.Email+"_RefreshToken"]
+	Token := otpStore[body.Email+"_JWT"]
 
 	delete(otpStore, body.Email)
-	delete(otpStore, body.Email+"_AccessToken")
-	delete(otpStore, body.Email+"_RefreshToken")
+	delete(otpStore, body.Email+"_JWT")
 
 	signInResp := SignInResponse{
-		AccessToken:  AccessToken,
-		RefreshToken: RefreshToken,
+		Token:  Token,
 	}
 
 	c.JSON(http.StatusOK, gin.H{
@@ -185,4 +188,31 @@ func (h *HandlerAPI) Verify2Step(c *gin.Context) {
 
 type MyKeycloakClient struct {
 	*keycloak.ClientKeycloak
+}
+
+//decode payload to add profile in the token: 
+func DecodeJWTPayload(token string) (map[string]interface{}, error) {
+    parts := strings.Split(token, ".")
+    if len(parts) < 2 {
+        return nil, fmt.Errorf("invalid token")
+    }
+
+    payloadStr := parts[1]
+
+    padding := len(payloadStr) % 4
+    if padding > 0 {
+        payloadStr += strings.Repeat("=", 4-padding)
+    }
+
+    payloadBytes, err := base64.URLEncoding.DecodeString(payloadStr)
+    if err != nil {
+        return nil, err
+    }
+
+    var payload map[string]interface{}
+    if err := json.Unmarshal(payloadBytes, &payload); err != nil {
+        return nil, err
+    }
+
+    return payload, nil
 }
