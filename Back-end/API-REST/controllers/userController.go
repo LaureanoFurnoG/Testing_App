@@ -14,22 +14,12 @@ import (
 	"Go-API-T/models"
 	"fmt"
 
-	//"strings"
-	//"time"
-	//"example/Go-API-T/services"
-	//"encoding/base64"
-	//"encoding/json"
-	//"context"
-	//"math/rand"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	//"github.com/golang-jwt/jwt/v5"
-	//"golang.org/x/crypto/bcrypt"
-	//"strconv"
 )
-var otpStore = make(map[string]any)
 
+var otpStore = make(map[string]any)
 
 // function to save all endpoints in a "router".
 func UserRoutes(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middleware) {
@@ -105,7 +95,10 @@ func (h *HandlerAPI) register(c *gin.Context) {
 }
 
 type SignInResponse struct {
-	Token  any
+	AccessToken string `json:"access_token,omitempty"`
+	IDToken     string `json:"id_token,omitempty"`
+
+	Profile keycloak.Profile `json:"profile,omitempty"`
 }
 
 func (h *HandlerAPI) login(c *gin.Context) {
@@ -137,13 +130,13 @@ func (h *HandlerAPI) login(c *gin.Context) {
 		return
 	}
 	profile, err := DecodeJWTPayload(jwt.IDToken)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{
-            "error": "cannot decode token",
-        })
-        return
-    }
-	jwt.Profile = profile
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "cannot decode token",
+		})
+		return
+	}
+	jwt.Profile = *profile
 	otpStore[jsonData.Email+"_JWT"] = jwt
 
 	c.JSON(http.StatusOK, gin.H{
@@ -171,18 +164,41 @@ func (h *HandlerAPI) Verify2Step(c *gin.Context) {
 		return
 	}
 
-	Token := otpStore[body.Email+"_JWT"]
-
+	jwt, ok := otpStore[body.Email+"_JWT"].(*keycloak.JWT)
+	if !ok {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "invalid session state"})
+		return
+	}
 	delete(otpStore, body.Email)
 	delete(otpStore, body.Email+"_JWT")
 
-	signInResp := SignInResponse{
-		Token:  Token,
-	}
+	c.SetCookie(
+		"refresh_token",
+		jwt.RefreshToken,
+		3600*24*30,
+		"/",
+		"localhost",
+		false,
+		true,
+	)
+
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "profile",
+		Value:    jwt.Profile.Sub,
+		Path:     "/",
+		Domain:   "localhost",
+		MaxAge:   3600 * 24 * 30,
+		HttpOnly: true,
+		Secure:   false,                 
+		SameSite: http.SameSiteNoneMode, 
+	})
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "User login successful",
-		"data":    signInResp,
+		"Data": SignInResponse{
+			AccessToken: jwt.AccessToken,
+			Profile:     jwt.Profile,
+		},
 	})
 }
 
@@ -190,29 +206,29 @@ type MyKeycloakClient struct {
 	*keycloak.ClientKeycloak
 }
 
-//decode payload to add profile in the token: 
-func DecodeJWTPayload(token string) (map[string]interface{}, error) {
-    parts := strings.Split(token, ".")
-    if len(parts) < 2 {
-        return nil, fmt.Errorf("invalid token")
-    }
+// decode payload to add profile in the token:
+func DecodeJWTPayload(token string) (*keycloak.Profile, error) {
+	parts := strings.Split(token, ".")
+	if len(parts) < 2 {
+		return nil, fmt.Errorf("invalid token")
+	}
 
-    payloadStr := parts[1]
+	payloadStr := parts[1]
 
-    padding := len(payloadStr) % 4
-    if padding > 0 {
-        payloadStr += strings.Repeat("=", 4-padding)
-    }
+	padding := len(payloadStr) % 4
+	if padding > 0 {
+		payloadStr += strings.Repeat("=", 4-padding)
+	}
 
-    payloadBytes, err := base64.URLEncoding.DecodeString(payloadStr)
-    if err != nil {
-        return nil, err
-    }
+	payloadBytes, err := base64.URLEncoding.DecodeString(payloadStr)
+	if err != nil {
+		return nil, err
+	}
 
-    var payload map[string]interface{}
-    if err := json.Unmarshal(payloadBytes, &payload); err != nil {
-        return nil, err
-    }
+	var payload keycloak.Profile
+	if err := json.Unmarshal(payloadBytes, &payload); err != nil {
+		return nil, err
+	}
 
-    return payload, nil
+	return &payload, nil
 }

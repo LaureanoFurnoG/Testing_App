@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 
 	"Go-API-T/initializers"
 	"Go-API-T/models"
@@ -41,18 +42,18 @@ func declareExchange(ch *amqp.Channel) error {
 
 // function to save all endpoints in a "router".
 func TestsRoutes(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middleware) {
-	test := rg.Group("/tests") //prefix that all routes(endpoints)
+	test := rg.Group("/tests/:groupId") //prefix that all routes(endpoints)
 
-	test.POST("/test-event", mw.RequireAuth(), handler.TestEvent)
-	test.GET("/find-tests", mw.RequireAuth(), handler.FindTest)
-	test.GET("/find-testsSave", mw.RequireAuth(), handler.FindTestSave)
+	test.POST("/test-event", mw.RequireAuth(), mw.BelongsGroup(), handler.TestEvent)
+	test.GET("/find-tests", mw.RequireAuth(), mw.BelongsGroup(), handler.FindTest)
+	test.GET("/find-testsSave", mw.RequireAuth(), mw.BelongsGroup(), handler.FindTestSave)
 
-	test.POST("/test-all", mw.RequireAuth(), handler.RunAllEnd)
-	test.POST("/create-save", mw.RequireAuth(), handler.saveTestEndpointsDoc)
-	test.DELETE("/delete-testSave", mw.RequireAuth(), handler.DeleteEndpointSave)
-	test.DELETE("/delete-test", mw.RequireAuth(), handler.DeleteEndpoint)
-	test.POST("/test-front", mw.RequireAuth(), handler.TestFrontEnd)
-	test.POST("/make-pdf", mw.RequireAuth(), handler.MakePDF)
+	test.POST("/test-all", mw.RequireAuth(), mw.BelongsGroup(), handler.RunAllEnd)
+	test.POST("/create-save", mw.RequireAuth(), mw.BelongsGroup(), handler.saveTestEndpointsDoc)
+	test.DELETE("/delete-testSave", mw.RequireAuth(), mw.BelongsGroup(), handler.DeleteEndpointSave)
+	test.DELETE("/delete-test", mw.RequireAuth(), mw.BelongsGroup(), handler.DeleteEndpoint)
+	test.POST("/test-front", mw.RequireAuth(), mw.BelongsGroup(), handler.TestFrontEnd)
+	test.POST("/make-pdf", mw.RequireAuth(), mw.BelongsGroup(), handler.MakePDF)
 
 }
 
@@ -152,6 +153,7 @@ type jsonData struct {
 
 func (h *HandlerAPI) TestEvent(c *gin.Context) {
 	// Connect rabbitMQ
+	groupId := c.Param("groupId")
 	var jsonDataRe struct {
 		Id_Group    int
 		Name        string
@@ -162,7 +164,14 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 		Header      map[string]interface{}
 		Token       string
 	}
-
+	convStringToInt, err := strconv.Atoi(groupId)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to parse groupID",
+		})
+		return
+	}
+	jsonDataRe.Id_Group = convStringToInt
 	if c.ShouldBindJSON(&jsonDataRe) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to read body",
@@ -170,10 +179,17 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 		return
 	}
 
-	accessToken := c.Request.Header.Get("Access-Token") //temporal
+	accessHeader := c.GetHeader("Authorization")
+	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
+		c.Abort()
+		return
+	}
 
-	//accessToken := c.GetHeader("Authorization")
-	//tokenString := strings.TrimPrefix(accessToken, "Bearer ")
+	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
+	accessToken = strings.TrimSpace(accessToken)
+	
+	fmt.Println(accessToken)
 	testDriven(jsonDataRe, accessToken, c, h)
 
 }
@@ -192,14 +208,14 @@ func saveDataTest(Id_Group int, values jsonData, accessToken string, c *gin.Cont
 	//search user
 	var userF models.Users
 	userKeycloak, err := h.clientKC.UserInfo(c.Request.Context(), accessToken)
-
+	fmt.Println(accessToken)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
 		})
 		return err
 	}
-	
+
 	userFind := initializers.DB.First(&userF, "keycloak_id = ?", userKeycloak.ID)
 
 	if userFind.Error != nil {
@@ -295,8 +311,8 @@ func (h *HandlerAPI) FindTest(c *gin.Context) {
 		})
 		return
 	}
-	testS := models.Backendtests{}
-	find := initializers.DB.Where("name LIKE ?", "%"+jsonDataRe.Name+"%").Find(&testS)
+	testS := []models.Backendtests{}
+	find := initializers.DB.Where("name LIKE ? AND Idgroup = ?", "%"+jsonDataRe.Name+"%", c.Param("groupId")).Find(&testS)
 
 	if find.Error != nil {
 		c.JSON(404, gin.H{

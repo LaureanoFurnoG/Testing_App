@@ -5,31 +5,22 @@ import (
 	"Go-API-T/initializers"
 	"Go-API-T/middlewere"
 	"Go-API-T/models"
-
-	//"fmt"
-	//"strings"
-
-	//"Go-API-T/services"
-	//"crypto/rand"
-	//"fmt"
-	//"math/big"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	//"github.com/golang-jwt/jwt/v5"
-	//"golang.org/x/crypto/bcrypt"
-	//"strconv"
 )
 
 func GroupsController(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.Middleware) {
 	group := rg.Group("/group")
 
 	group.POST("/createGroup", mw.RequireAuth(), handler.createGroup)
-	group.POST("/inviteGroup", mw.RequireAuth(), handler.inviteGroup)
+	group.POST("/inviteGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.inviteGroup)
 	group.PATCH("/acceptInvitation", mw.RequireAuth(), handler.acceptInvitation)
 	group.DELETE("/declineGroup", mw.RequireAuth(), handler.declineGroup)
 
-	group.DELETE("/deleteGroup", mw.RequireAuth(), handler.deleteGroup)
+	group.DELETE("/deleteGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.deleteGroup)
 
 	group.GET("/showAllGroups", mw.RequireAuth(), handler.showAllGroups)
 
@@ -39,7 +30,16 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 	var jsonData struct {
 		Name string
 	}
-	accessToken := c.GetHeader("Access-Token")
+
+	accessHeader := c.GetHeader("Authorization")
+	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
+		c.Abort()
+		return
+	}
+
+	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
+	accessToken = strings.TrimSpace(accessToken)
 
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -168,10 +168,19 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 func (h *HandlerAPI) inviteGroup(c *gin.Context) {
 	var jsonData struct {
 		Email   string
-		GroupID string
+		GroupID int
 	}
 
-	//accessToken := c.Request.Header.Get("Access-Token") //temporal
+	convInt, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil{
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to parse groupId",
+		})
+		return
+	}
+	jsonData.GroupID = convInt
+
+	//accessToken  := c.GetHeader("Authorization")
 	//accessToken := c.GetHeader("Authorization")
 	//tokenString := strings.TrimPrefix(accessToken, "Bearer ")
 
@@ -183,7 +192,7 @@ func (h *HandlerAPI) inviteGroup(c *gin.Context) {
 	}
 
 	var group models.Groups
-	searchGroup := initializers.DB.Find(&group, "keycloak_id = ?", jsonData.GroupID)
+	searchGroup := initializers.DB.Find(&group, "id = ?", jsonData.GroupID)
 
 	if searchGroup.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -231,7 +240,16 @@ func (h *HandlerAPI) acceptInvitation(c *gin.Context) {
 	var jsonData struct {
 		GroupID int
 	}
-	accessToken := c.Request.Header.Get("Access-Token") //temporal
+
+	accessHeader := c.GetHeader("Authorization")
+	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
+		c.Abort()
+		return
+	}
+
+	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
+	accessToken = strings.TrimSpace(accessToken)
 
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -291,7 +309,16 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 	var jsonData struct {
 		GroupID int
 	}
-	accessToken := c.Request.Header.Get("Access-Token") //temporal
+
+	accessHeader := c.GetHeader("Authorization")
+	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
+		c.Abort()
+		return
+	}
+
+	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
+	accessToken = strings.TrimSpace(accessToken)
 
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -332,7 +359,7 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 	}
 
 	GroupRelationChange := initializers.DB.Model(&GroupsRelation).
-		Where("idgroup = ? AND iduser = ?", jsonData.GroupID, userF.ID).Delete(&GroupsRelation)
+		Where("idgroup = ? AND iduser = ? AND accepted = ?", jsonData.GroupID, userF.ID, false).Delete(&GroupsRelation)
 
 	if GroupRelationChange.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -347,7 +374,15 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 }
 
 func (h *HandlerAPI) showAllGroups(c *gin.Context) {
-	accessToken := c.Request.Header.Get("Access-Token") //temporal
+	accessHeader := c.GetHeader("Authorization")
+	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
+		c.Abort()
+		return
+	}
+
+	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
+	accessToken = strings.TrimSpace(accessToken)
 
 	userKeycloak, err := h.clientKC.UserInfo(c.Request.Context(), accessToken)
 	if err != nil {

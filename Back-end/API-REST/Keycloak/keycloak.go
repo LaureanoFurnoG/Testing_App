@@ -22,17 +22,28 @@ type ClientKeycloak struct {
 	realmAdmin string
 }
 
-type JWT struct {
-	AccessToken      string `json:"access_token,omitempty"`
-	ExpiresIn        int    `json:"expires_in,omitempty"`
-	RefreshExpiresIn int    `json:"refresh_expires_in,omitempty"`
-	RefreshToken     string `json:"refresh_token,omitempty"`
-	TokenType        string `json:"token_type,omitempty"`
-	IDToken          string `json:"id_token,omitempty"`
-	SessionState     string `json:"session_state,omitempty"`
-	Scope            string `json:"scope,omitempty"`
+type Profile struct {
+	Acr            string
+	At_hash        string
+	Aud            string
+	Azp            string
+	Email          string
+	Email_verified bool
+	Exp            int
+	Iat            int
+	Iss            string
+	Jti            string
+	Sid            string
+	Sub            string
+	Typ            string
+}
 
-	Profile map[string]interface{} `json:"profile,omitempty"`
+type JWT struct {
+	AccessToken  string `json:"access_token,omitempty"`
+	RefreshToken string `json:"refresh_token,omitempty"`
+	IDToken      string `json:"id_token,omitempty"`
+
+	Profile Profile `json:"profile,omitempty"`
 }
 
 func NewClientKeycloak() *ClientKeycloak {
@@ -54,13 +65,9 @@ func (c *ClientKeycloak) Login(ctx context.Context, email, password string) (*JW
 		return nil, err
 	}
 	cJWT := JWT{
-		AccessToken:      jwt.AccessToken,
-		RefreshToken:     jwt.RefreshToken,
-		ExpiresIn:        jwt.ExpiresIn,
-		RefreshExpiresIn: jwt.RefreshExpiresIn,
-		TokenType:        jwt.TokenType,
-		IDToken:          jwt.IDToken,
-		SessionState:     jwt.SessionState,
+		AccessToken:  jwt.AccessToken,
+		RefreshToken: jwt.RefreshToken,
+		IDToken:      jwt.IDToken,
 	}
 	return &cJWT, nil
 }
@@ -282,7 +289,6 @@ func (c *ClientKeycloak) InviteGroups(ctx context.Context, params InviteGroupsPa
 	return nil
 }
 
-// para ver todos los grupos de un usuario:
 func (c *ClientKeycloak) GetGroups(ctx context.Context, accessToken, userID string) ([]*gocloak.Group, error) {
 	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
 

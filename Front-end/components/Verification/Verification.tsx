@@ -27,8 +27,8 @@ const VerificatorAuth: React.FC <CardType> = ({ CardType }) => {
         OTP: text
       }
       const response = await axiosInstance.post("/api/user/verify", value);
-      sessionStorage.setItem("Token", JSON.stringify(response.data.data.Token));
-      setToken(response.data.data.Token);
+      sessionStorage.setItem("Token", JSON.stringify(response.data.Data));
+      setToken(response.data.Data);
 
       localStorage.removeItem('email')
       groupsNavigate()

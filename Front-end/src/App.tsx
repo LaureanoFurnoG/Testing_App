@@ -19,7 +19,9 @@ function App() {
   const location = useLocation();
   const [loginPage, setLoginPage] = useState(false)
   const auth = useAuth();
-  setupInterceptors(auth);
+  useEffect(() => {
+    setupInterceptors(auth);
+  }, []);
 
   useEffect(() => {
     if(location.pathname.includes("/login")){

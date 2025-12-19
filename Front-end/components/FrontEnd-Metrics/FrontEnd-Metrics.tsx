@@ -22,7 +22,7 @@ const FrontEnd_MetricsCard: React.FC<FrontEnd_Metrics> = ({ URL }) => {
       Url: URL,
       Strategy:"Mobile"
     };
-    const response = await axiosInstance.post('/api/tests/test-front', body)
+    const response = await axiosInstance.post('/api/tests/6/test-front', body)
 
     setSeoScore(response.data.result.lighthouseResult.categories.seo.score*100)
     setPerformanceScore(response.data.result.lighthouseResult.categories.performance.score*100)
