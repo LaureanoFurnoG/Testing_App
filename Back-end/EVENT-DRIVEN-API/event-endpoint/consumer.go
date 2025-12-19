@@ -354,7 +354,7 @@ func HeadersSet(dataP DataParsed) (result map[string]string, err error) {
 	for k, v := range dataP.Header {
 		// if the value is string
 		if str, ok := v.(string); ok {
-			if k == "Access-Token" {
+			if k == "Authorization" {
 				headers["Authorization"] = "Bearer " + str
 			} else {
 				headers[k] = str
