@@ -27,7 +27,6 @@ func (m Middleware) RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		accessHeader := c.GetHeader("Authorization")
-		fmt.Println("ALL HEADERS:", c.Request.Header)
 
 		if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Access token missing"})

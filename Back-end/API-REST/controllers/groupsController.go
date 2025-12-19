@@ -37,6 +37,12 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 		c.Abort()
 		return
 	}
+	if jsonData.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "Missing the group name",
+		})
+		return
+	}
 
 	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
 	accessToken = strings.TrimSpace(accessToken)
@@ -172,7 +178,7 @@ func (h *HandlerAPI) inviteGroup(c *gin.Context) {
 	}
 
 	convInt, err := strconv.Atoi(c.Param("groupId"))
-	if err != nil{
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Failed to parse groupId",
 		})
