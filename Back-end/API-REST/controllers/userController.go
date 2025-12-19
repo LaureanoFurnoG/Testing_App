@@ -76,8 +76,22 @@ func (h *HandlerAPI) register(c *gin.Context) {
 	userID, err := h.clientKC.CreateUser(c.Request.Context(), params)
 
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"Error": err.Error(),
+		if strings.Contains(err.Error(), "Conflict") {
+			c.JSON(http.StatusConflict, gin.H{
+				"error": "User exists with same email",
+			})
+			return
+		}
+
+		if strings.Contains(err.Error(), "Bad Request"){
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "User data missing",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Authentication service unavailable",
 		})
 		return
 	}
@@ -116,8 +130,15 @@ func (h *HandlerAPI) login(c *gin.Context) {
 
 	jwt, err := h.clientKC.Login(c.Request.Context(), jsonData.Email, jsonData.Password)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"Error": err.Error(),
+		if strings.Contains(err.Error(), "invalid_grant") {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Invalid email or password",
+			})
+			return
+		}
+
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Authentication service unavailable",
 		})
 		return
 	}
@@ -189,8 +210,8 @@ func (h *HandlerAPI) Verify2Step(c *gin.Context) {
 		Domain:   "localhost",
 		MaxAge:   3600 * 24 * 30,
 		HttpOnly: true,
-		Secure:   false,                 
-		SameSite: http.SameSiteNoneMode, 
+		Secure:   false,
+		SameSite: http.SameSiteNoneMode,
 	})
 
 	c.JSON(http.StatusOK, gin.H{

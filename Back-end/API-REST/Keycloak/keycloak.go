@@ -211,8 +211,7 @@ func (c *ClientKeycloak) CreateGroup(ctx context.Context, params CreateGroupPara
 	userInfo, err := c.kc.GetUserInfo(ctx, accessToken, c.realm)
 
 	if err != nil {
-		fmt.Print(err)
-		return "ads", err
+		return "", err
 	}
 
 	if userInfo.Sub == nil {
