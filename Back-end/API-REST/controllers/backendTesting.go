@@ -225,7 +225,7 @@ func saveDataTest(Id_Group int, values jsonData, accessToken string, c *gin.Cont
 		return err
 	}
 	//search if the test exist already
-
+	fmt.Print("llego acaaaaaa")
 	//create instance of test data in local database
 	requestJSON, err := json.Marshal(values.Request)
 	if err != nil {
@@ -263,7 +263,7 @@ func saveDataTest(Id_Group int, values jsonData, accessToken string, c *gin.Cont
 		Token:            values.Token,
 	}
 
-	findTest := initializers.DB.Where("Urlapi = ? AND response_http_code = ?", testS.Urlapi, testS.ResponseHttpCode).Find(&testS)
+	findTest := initializers.DB.Where("Urlapi = ? AND response_http_code = ? AND idgroup= ?", testS.Urlapi, testS.ResponseHttpCode, testS.Idgroup).Find(&testS)
 	if findTest.Error != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failed to search data",
