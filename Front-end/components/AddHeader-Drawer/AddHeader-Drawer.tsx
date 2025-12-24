@@ -3,7 +3,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, Drawer, Form, Input, Row, Space } from 'antd';
 import './style.css'
 
-const AddHeaderModal: React.FC = () => {
+const AddHeaderDrawer: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -107,4 +107,4 @@ const AddHeaderModal: React.FC = () => {
   );
 };
 
-export default AddHeaderModal;
+export default AddHeaderDrawer;

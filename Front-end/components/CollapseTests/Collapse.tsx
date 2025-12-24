@@ -6,7 +6,7 @@ import {
   SaveOutlined,
   PlayCircleOutlined,
 } from '@ant-design/icons';
-import AddHeaderModal from '../AddHeader-Modal/AddHeader-Modal';
+import AddHeaderDrawer from '../AddHeader-Drawer/AddHeader-Drawer';
 const { Panel } = Collapse;
 
 interface CollapseCardProps  {
@@ -82,7 +82,7 @@ const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Type, HTTPResult, 
                       ]}
                     />
                   </div>
-                  <AddHeaderModal />
+                  <AddHeaderDrawer />
                 </div>
               </div>
               <div className="div4"> </div>

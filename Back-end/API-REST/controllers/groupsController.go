@@ -31,6 +31,13 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 		Name string
 	}
 
+	if c.ShouldBindJSON(&jsonData) != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to read body",
+		})
+		return
+	}
+	
 	accessHeader := c.GetHeader("Authorization")
 	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
 		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
@@ -46,13 +53,6 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 
 	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
 	accessToken = strings.TrimSpace(accessToken)
-
-	if c.ShouldBindJSON(&jsonData) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read body",
-		})
-		return
-	}
 
 	groupID, err := h.clientKC.CreateGroup(c.Request.Context(), keycloak.CreateGroupParams{Name: jsonData.Name}, accessToken)
 

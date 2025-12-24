@@ -4,7 +4,6 @@ import CollapseCard from '../../components/CollapseTests/Collapse';
 import { Button, Input, Space, type GetProps } from 'antd';
 import FrontEnd_MetricsCard from '../../components/FrontEnd-Metrics/FrontEnd-Metrics';
 import TableUsers_Group from '../../components/TableUsers-Group/TableUsers-Group';
-import AddUserModal from '../../components/AddUser-Modal/AddUser-Modal';
 import AddEndpoint from '../../components/AddEndpoint/AddEndpoint';
 type SearchProps = GetProps<typeof Input.Search>;
 const { Search } = Input;
