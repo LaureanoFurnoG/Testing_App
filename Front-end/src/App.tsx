@@ -20,8 +20,8 @@ function App() {
   const [loginPage, setLoginPage] = useState(false)
   const auth = useAuth();
   useEffect(() => {
-    setupInterceptors(auth);
-  }, []);
+    setupInterceptors(auth)
+  }, [])
 
   useEffect(() => {
     if(location.pathname.includes("/login")){
@@ -36,7 +36,7 @@ function App() {
             <Route path="/" element={<Homepage />} />
           <Route path="/" element={<MainLayout />}>
             <Route path="Groups" element={<GroupsManagement />} />
-            <Route path="GroupData" element={<GroupData />} />
+            <Route path=":groupId/GroupData" element={<GroupData />} />
             <Route path="Documentation" element={<Documentation />} />
             <Route path="Settings" element={<Settings />} />
             <Route path="Profile" element={<Profile />} />

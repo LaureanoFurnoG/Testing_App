@@ -379,34 +379,48 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 	})
 }
 
+type GroupUser struct {
+	IDKeycloak string                 `json:"id_keycloak"`
+	ID         int                    `json:"id"`
+	Name       string                 `json:"name"`
+	SubGroups  map[string]interface{} `json:"sub_groups"`
+}
+
 func (h *HandlerAPI) showAllGroups(c *gin.Context) {
-	accessHeader := c.GetHeader("Authorization")
-	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
-		c.Abort()
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "user not authenticated",
+		})
 		return
 	}
 
-	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
-	accessToken = strings.TrimSpace(accessToken)
-
-	userKeycloak, err := h.clientKC.UserInfo(c.Request.Context(), accessToken)
+	userKeycloakGroups, err := h.clientKC.GetGroups(c.Request.Context(), "", userID.(string))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": err,
 		})
 		return
 	}
 
-	userKeycloakGroups, err := h.clientKC.GetGroups(c.Request.Context(), accessToken, userKeycloak.ID)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
-		return
-	}
+	var groups []GroupUser
+	for i := 0; i < len(userKeycloakGroups); i++ {
+		var groupDB models.Groups
 
+		_ = initializers.DB.
+			Where("keycloak_id = ?", userKeycloakGroups[i].ID).
+			First(&groupDB)
+
+		nameGroup := strings.Split(*userKeycloakGroups[i].Name, "-")[0]
+		group := GroupUser{
+			IDKeycloak: *userKeycloakGroups[i].ID,
+			ID:         groupDB.ID,
+			Name:       nameGroup,
+			SubGroups:  make(map[string]interface{}),
+		}
+		groups = append(groups, group)
+	}
 	c.JSON(http.StatusOK, gin.H{
-		"Groups": userKeycloakGroups,
+		"Groups": groups,
 	})
 }

@@ -9,19 +9,15 @@ import axiosInstance from '../../axios';
 interface CardGroupProps  {
   Id: number;
   Name: string;
-  Endpoints: string;
-  Members: string;
 } 
 
-const CardGroup: React.FC<CardGroupProps> = ({Id, Name, Endpoints, Members }) => {
+const CardGroup: React.FC<CardGroupProps> = ({Id, Name }) => {
     const sharedProps = {};
     return (
     <>
-        <div className='ContainerGroupCard'>
+        <div id={Id.toString()}  className='ContainerGroupCard'>
           <div className='container-data'>
             <h2>{Name}</h2>
-            <p><b>Endpoints</b>: {Endpoints}</p>
-            <p><b>Members</b>: {Members}</p>
             <div className='Buttons-CardGroup'>
               <button className='open-button'>Open</button>
               <button className='delete-button'>Delete</button>

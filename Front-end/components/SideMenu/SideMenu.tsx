@@ -7,12 +7,21 @@ import {
 } from '@ant-design/icons';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './SideMenu.css'
+import axiosInstance from '../../axios';
+import { useAuth } from '../../auth/AuthProvider';
 const { Sider } = Layout;
-
+interface Group{
+  id: number;
+  name: string;
+  path: string;
+  subGroups: []
+}
 const SideMenu: React.FC = () => {
   // Local state to track collapsed/expanded status
   const [collapsed, setCollapsed] = useState(false);
   const [LocationApp, setLocationApp] = useState(['0'])
+  const [Groups, setGroups] = useState<Group[]>([])
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
   let navigate = useNavigate()
 
@@ -20,8 +29,8 @@ const SideMenu: React.FC = () => {
     navigate('/Groups')
   };
 
-  const groupNavigate = () => {
-    navigate('/GroupData')
+  const groupNavigate = (group_id: number) => {
+    navigate(`/${group_id}/GroupData`)
   };
 
   const DocumentationNavigate = () => {
@@ -38,6 +47,23 @@ const SideMenu: React.FC = () => {
     localStorage.clear();
     window.location.href = '/login';
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAllGroups()
+    }
+  }, [isAuthenticated])
+
+  const fetchAllGroups = async () => {
+    try {
+      const res = await axiosInstance.get("/api/group/showAllGroups")
+      let groupsDisplay = { id: 0, name: 'All_groups'}
+      res.data.Groups.unshift(groupsDisplay)
+      setGroups(res.data.Groups)
+    } catch (e) {
+      console.log(e)
+    }
+  }
   const userMenu = (
     <Menu className='usersOptionMenu'
       items={[
@@ -49,32 +75,25 @@ const SideMenu: React.FC = () => {
     />
   );
   type MenuItem = Required<MenuProps>['items'][number];
-
   const items: MenuItem[] = [
-  {
-    key: '1',
-    label: 'Groups',
-    icon: <UsergroupAddOutlined />,
-    children: [
-      //i think that we can use a loop and travel the clients table, find the name and insert in the label
-      {
-        key: 'g1',
-        label: 'Manage Groups',
-        onClick: manageGroupsNavigate
-      },
-      {
-        key: 'g2',
-        label: 'G_Name',
-        onClick: groupNavigate
-      },
-    ],
-  },
-  {
-    key: '2',
-    label: 'Documentation',
-    icon: <FileDoneOutlined />,
-    onClick: DocumentationNavigate
-  },
+    {
+      key: '1',
+      label: 'Groups',
+      icon: <UsergroupAddOutlined />,
+      children: Groups
+      .slice(0,8)
+      .map(g =>({
+        key: `group-${g.id}`,
+        label: g.name,
+        onClick: g.id === 0 ? manageGroupsNavigate : () => groupNavigate(g.id)
+      }))
+    },
+    {
+      key: '2',
+      label: 'Documentation',
+      icon: <FileDoneOutlined />,
+      onClick: DocumentationNavigate
+    },
   ]
 
   useEffect(() =>{
