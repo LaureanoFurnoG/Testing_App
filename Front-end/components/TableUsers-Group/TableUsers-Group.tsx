@@ -4,7 +4,7 @@ import axiosInstance from "../../axios";
 import { Divider, Table, type GetProps } from "antd";
 import { Input, type TableColumnsType } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
-import AddUserModal from "../AddUser-Modal/AddUser-Modal";
+import AddUserDrawer from "../AddUser-Drawer/AddUser-Drawer";
 
 const { Search } = Input;
 
@@ -81,7 +81,7 @@ export default class TableUsers_Group extends React.Component<
           <span className="headerTitle">User</span>
 
           <div className="headerActions">
-            <AddUserModal />
+            <AddUserDrawer />
 
             <Search
               placeholder="Search user by Name"

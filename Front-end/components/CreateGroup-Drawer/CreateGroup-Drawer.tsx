@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, Drawer, Form, Input, Row, Space } from 'antd';
-
-const AddUserModal: React.FC = () => {
+import axiosInstance from '../../axios';
+interface NewGroup {
+  AddNewGroup: (val: boolean) => void;
+  GroupBoolean: boolean;
+} 
+const CreateGroupDrawer: React.FC <NewGroup> = ({ AddNewGroup, GroupBoolean }) => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
 
@@ -14,26 +18,28 @@ const AddUserModal: React.FC = () => {
     setOpen(false);
   };
 
-  const saveUser = async () => {
+  const createGroup = async () => {
     try {
       const values = await form.validateFields();
-      console.log("Email:", values.Email);
+      await axiosInstance.post("/api/group/createGroup", values);
 
       onClose();
       form.resetFields();
+      AddNewGroup(!GroupBoolean)
     } catch (error) {
       console.log("Validation error:", error);
     }
   };
 
+
   return (
     <>
       <Button type="primary" className='addMemberBtn' onClick={showDrawer} icon={<PlusOutlined />}>
-        Add Member
+        Create Group
       </Button>
 
       <Drawer
-        title="Add User"
+        title="Create Group"
         onClose={onClose}
         open={open}
         styles={{
@@ -44,8 +50,8 @@ const AddUserModal: React.FC = () => {
         extra={
           <Space>
             <Button className='btn-border' onClick={onClose}>Cancel</Button>
-            <Button className='addMemberBtn' onClick={saveUser} type="primary">
-              Invite User
+            <Button className='addMemberBtn' onClick={createGroup} type="primary">
+              Create Group
             </Button>
           </Space>
         }
@@ -58,11 +64,11 @@ const AddUserModal: React.FC = () => {
           <Row gutter={16}>
             <Col span={24}>
               <Form.Item
-                name="Email"
-                label="Email"
-                rules={[{ required: true, message: 'Please enter user Email' }]}
+                name="name"  
+                label="Name"
+                rules={[{ required: true, message: 'Please enter group name' }]}
               >
-                <Input placeholder="Please enter user Email" />
+                <Input placeholder="Please enter group name" />
               </Form.Item>
             </Col>
           </Row>
@@ -72,4 +78,4 @@ const AddUserModal: React.FC = () => {
   );
 };
 
-export default AddUserModal;
+export default CreateGroupDrawer;

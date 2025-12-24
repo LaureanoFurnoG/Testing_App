@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './style.css'
 import CardGroup from '../../components/CardGroup/CardGroup'
 import axiosInstance from '../../axios';
+import CreateGroupDrawer from '../../components/CreateGroup-Drawer/CreateGroup-Drawer'
 import { useAuth } from '../../auth/AuthProvider';
 interface Group{
   id: number;
@@ -12,12 +13,12 @@ interface Group{
 const GroupsManagement: React.FC = () => {
   const [Groups, setGroups] = useState<Group[]>([])
   const { isAuthenticated } = useAuth();
-
+  const [AddGroup, setAddGroup] = useState(false)
   useEffect(() => {
     if (isAuthenticated) {
       fetchAllGroups()
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, AddGroup])
 
   const fetchAllGroups = async () => {
     try {
@@ -31,7 +32,7 @@ const GroupsManagement: React.FC = () => {
     <div className='Container-groups-all'>
       <div className='createG-Header'>
         <h2>Groups</h2>
-        <button>Create Group</button>
+        <CreateGroupDrawer AddNewGroup={setAddGroup} GroupBoolean={AddGroup}></CreateGroupDrawer>
       </div>
       <div className='cards-groups'>
         {Groups.map(group =>(
