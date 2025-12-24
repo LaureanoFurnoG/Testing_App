@@ -50,33 +50,33 @@ const LoginCard: React.FC <LoginCardProps> = ({ CardType }) => {
     }
 
     const onFinish = async (value: { email: string; password: string }) => {
-    setLoading(true);
+        setLoading(true);
 
-    try {
-        const captchaValue = captcha.current.getValue();
-        if (!captchaValue) {
-            setUserValid(false);
-            setCaptchaValid(false);
-            setLoading(false);
-            return; 
-        }
-        setUserValid(true);
-        setCaptchaValid(true);
         try {
-            const response = await axiosInstance.post("/api/user/login", value);
-            setValidSession(true);
-            localStorage.setItem('email', value.email);
-            CardType("verify");
-        } catch (error: any) {
-            errorM(error); 
-        }
+            const captchaValue = captcha.current.getValue();
+            if (!captchaValue) {
+                setUserValid(false);
+                setCaptchaValid(false);
+                setLoading(false);
+                return; 
+            }
+            setUserValid(true);
+            setCaptchaValid(true);
+            try {
+                const response = await axiosInstance.post("/api/user/login", value);
+                setValidSession(true);
+                localStorage.setItem('email', value.email);
+                CardType("verify");
+            } catch (error: any) {
+                errorM(error); 
+            }
 
-    } catch (error: any) {
-        setLoading(false);
-        errorM(error);
-    } finally {
-        setLoading(false); 
-    }
+        } catch (error: any) {
+            setLoading(false);
+            errorM(error);
+        } finally {
+            setLoading(false); 
+        }
     };
 
 

@@ -8,8 +8,10 @@ axiosInstance.defaults.withCredentials = true; //send cookies
 
 export const setupInterceptors = (auth: ReturnType<typeof useAuth>) => {
   axiosInstance.interceptors.request.use(config => {
-    if (auth.token?.access_token) {
-      config.headers['Authorization'] = `Bearer ${auth.token.access_token}`;
+    const stored = sessionStorage.getItem('Token');
+    if (stored) {
+      const token = JSON.parse(stored);
+      config.headers.Authorization = `Bearer ${token.access_token}`;
     }
     return config;
   });

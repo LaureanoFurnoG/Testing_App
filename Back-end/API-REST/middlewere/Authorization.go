@@ -25,9 +25,7 @@ func NewMiddleware(client *keycloak.ClientKeycloak) *Middleware {
 }
 func (m Middleware) RequireAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		accessHeader := c.GetHeader("Authorization")
-
 		if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Access token missing"})
 			return

@@ -5,35 +5,35 @@ import (
 )
 
 type Groups struct {
-	ID         uint   `gorm:"primaryKey"`
+	ID         int    `gorm:"primaryKey"`
 	KeycloakID string `gorm:"column:keycloak_id"`
 }
 
 type Users struct {
-	ID         uint   `gorm:"primaryKey"`
+	ID         int   `gorm:"primaryKey"`
 	KeycloakID string `gorm:"column:keycloak_id"`
 }
 
 type GroupsRelation struct {
-	ID uint `gorm:"primaryKey"`
+	ID int `gorm:"primaryKey"`
 
-	Iduser uint
+	Iduser int
 	User   Users `gorm:"foreignKey:Iduser;references:ID"`
 
-	Idgroup uint
+	Idgroup int
 	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
 	Accepted bool
 }
 
 type Backendtests struct {
-	ID uint `gorm:"primaryKey"`
+	ID int `gorm:"primaryKey"`
 
-	Idgroup          uint
+	Idgroup          int
 	Group            Groups `gorm:"foreignKey:Idgroup;references:ID"`
 	Name             string
 	Httptype         string
-	Urlapi           string `json:"Urlapi"` 
+	Urlapi           string `json:"Urlapi"`
 	Requesttype      string
 	Request          datatypes.JSON `gorm:"type:json"`
 	Response         datatypes.JSON `gorm:"type:json"`
@@ -43,12 +43,12 @@ type Backendtests struct {
 }
 
 type Saveendpointresult struct {
-	ID uint `gorm:"primaryKey"`
+	ID int `gorm:"primaryKey"`
 
-	Idgroup uint
+	Idgroup int
 	Group   Groups `gorm:"foreignKey:Idgroup;references:ID"`
 
-	Idtest       uint
+	Idtest       int
 	Backendtests Backendtests `gorm:"foreignKey:Idtest;references:ID"`
 
 	Testcasedescription string

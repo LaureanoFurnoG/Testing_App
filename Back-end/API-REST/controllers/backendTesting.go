@@ -251,7 +251,7 @@ func saveDataTest(Id_Group int, values jsonData, accessToken string, c *gin.Cont
 		return err
 	}
 	testS := models.Backendtests{
-		Idgroup:          uint(Id_Group),
+		Idgroup:          Id_Group,
 		Name:             values.Name,
 		Httptype:         values.HttpType,
 		Urlapi:           values.Urlapi,
@@ -515,8 +515,8 @@ func (h *HandlerAPI) saveTestEndpointsDoc(c *gin.Context) {
 
 	//group
 	saveendpointresult := models.Saveendpointresult{
-		Idgroup:             uint(request.Idgroup),
-		Idtest:              uint(request.Idtest),
+		Idgroup:             request.Idgroup,
+		Idtest:              request.Idtest,
 		Testcasedescription: request.Testcasedescription,
 		Testedinfrontend:    request.Testedinfrontend,
 		Evidencefrontend:    request.Evidencefrontend,
