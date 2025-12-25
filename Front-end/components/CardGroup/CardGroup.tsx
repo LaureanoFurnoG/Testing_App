@@ -1,8 +1,7 @@
 import './style.css'
 import React from 'react';
-import { Input, message } from 'antd';
-import type { GetProps } from 'antd';
 import axiosInstance from '../../axios';
+import { useGroups } from '../../context/GroupsContext';
 
 
 
@@ -12,7 +11,19 @@ interface CardGroupProps  {
 } 
 
 const CardGroup: React.FC<CardGroupProps> = ({Id, Name }) => {
-    const sharedProps = {};
+    const { refreshGroups } = useGroups();
+
+    const DeleteGroup = async (Id: number) =>{
+      try{
+        const response = await axiosInstance.delete(
+          `/api/group/deleteGroup/${Id}`
+        );
+        refreshGroups(); 
+        console.log(response)
+      }catch(error){
+        console.log(error)
+      }
+    }
     return (
     <>
         <div id={Id.toString()}  className='ContainerGroupCard'>
@@ -20,7 +31,7 @@ const CardGroup: React.FC<CardGroupProps> = ({Id, Name }) => {
             <h2>{Name}</h2>
             <div className='Buttons-CardGroup'>
               <button className='open-button'>Open</button>
-              <button className='delete-button'>Delete</button>
+              <button className='delete-button' onClick={() => DeleteGroup(Id)}>Delete</button>
             </div>
           </div>
         </div>

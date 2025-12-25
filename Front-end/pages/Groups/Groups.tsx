@@ -4,6 +4,7 @@ import CardGroup from '../../components/CardGroup/CardGroup'
 import axiosInstance from '../../axios';
 import CreateGroupDrawer from '../../components/CreateGroup-Drawer/CreateGroup-Drawer'
 import { useAuth } from '../../auth/AuthProvider';
+import { useGroups } from '../../context/GroupsContext';
 interface Group{
   id: number;
   name: string;
@@ -13,12 +14,13 @@ interface Group{
 const GroupsManagement: React.FC = () => {
   const [Groups, setGroups] = useState<Group[]>([])
   const { isAuthenticated } = useAuth();
-  const [AddGroup, setAddGroup] = useState(false)
+  const { refreshKey } = useGroups();
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchAllGroups()
     }
-  }, [isAuthenticated, AddGroup])
+  }, [isAuthenticated, refreshKey])
 
   const fetchAllGroups = async () => {
     try {
@@ -32,7 +34,7 @@ const GroupsManagement: React.FC = () => {
     <div className='Container-groups-all'>
       <div className='createG-Header'>
         <h2>Groups</h2>
-        <CreateGroupDrawer AddNewGroup={setAddGroup} GroupBoolean={AddGroup}></CreateGroupDrawer>
+        <CreateGroupDrawer></CreateGroupDrawer>
       </div>
       <div className='cards-groups'>
         {Groups.map(group =>(

@@ -2,13 +2,12 @@ import React, { useState } from 'react';
 import { PlusOutlined } from '@ant-design/icons';
 import { Button, Col, Drawer, Form, Input, Row, Space } from 'antd';
 import axiosInstance from '../../axios';
-interface NewGroup {
-  AddNewGroup: (val: boolean) => void;
-  GroupBoolean: boolean;
-} 
-const CreateGroupDrawer: React.FC <NewGroup> = ({ AddNewGroup, GroupBoolean }) => {
+import { useGroups } from '../../context/GroupsContext';
+
+const CreateGroupDrawer: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
+  const { refreshGroups } = useGroups();
 
   const showDrawer = () => {
     setOpen(true);
@@ -22,10 +21,9 @@ const CreateGroupDrawer: React.FC <NewGroup> = ({ AddNewGroup, GroupBoolean }) =
     try {
       const values = await form.validateFields();
       await axiosInstance.post("/api/group/createGroup", values);
-
+      refreshGroups();
       onClose();
       form.resetFields();
-      AddNewGroup(!GroupBoolean)
     } catch (error) {
       console.log("Validation error:", error);
     }

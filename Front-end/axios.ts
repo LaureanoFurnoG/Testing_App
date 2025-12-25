@@ -16,25 +16,25 @@ export const setupInterceptors = (auth: ReturnType<typeof useAuth>) => {
     return config;
   });
 
-  axiosInstance.interceptors.response.use(
-    response => {
-      const newAccess = response.headers['authorization'];
+  axiosInstance.interceptors.response.use(response => {
+    const authHeader = response.headers['authorization'];
 
-      if (newAccess) {
-        auth.setToken({
-          access_token: newAccess.replace('Bearer ', ''),
-          profile: auth.token?.profile
-        });
-      }
-
-      return response;
-    },
-    error => {
-      if (error.response?.status === 401) {
-        auth.logout();
-      }
-      return Promise.reject(error);
+    if (authHeader?.startsWith('Bearer ')) {
+      auth.setToken({
+        access_token: authHeader.slice(7),
+        profile: auth.token?.profile
+      });
     }
+
+    return response;
+  }
+  ,
+  error => {
+    if (error.response?.status === 401) {
+      auth.logout();
+    }
+    return Promise.reject(error);
+  }
   );
 
 };

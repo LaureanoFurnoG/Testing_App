@@ -108,21 +108,17 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 }
 
 func (h *HandlerAPI) deleteGroup(c *gin.Context) {
-	var jsonData struct {
-		GroupID int
-	}
-
-	if c.ShouldBindJSON(&jsonData) != nil {
+	GroupID, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read body",
+			"error": "Failed to parse groupId",
 		})
 		return
 	}
-
 	var group models.Groups
 	var GroupsRelation models.GroupsRelation
 
-	groupFound := initializers.DB.First(&group, "id = ?", jsonData.GroupID)
+	groupFound := initializers.DB.First(&group, "id = ?", GroupID)
 
 	if groupFound.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -131,7 +127,7 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 		return
 	}
 
-	groupRleatioNFound := initializers.DB.First(&GroupsRelation, "idgroup = ?", jsonData.GroupID)
+	groupRleatioNFound := initializers.DB.First(&GroupsRelation, "idgroup = ?", GroupID)
 
 	if groupRleatioNFound.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -140,20 +136,11 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 		return
 	}
 
-	err := h.clientKC.DeleteGroup(c.Request.Context(), group.KeycloakID)
+	err = h.clientKC.DeleteGroup(c.Request.Context(), group.KeycloakID)
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
-		})
-		return
-	}
-
-	groupDelete := initializers.DB.Delete(&group, jsonData.GroupID)
-
-	if groupDelete.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Group Missing",
 		})
 		return
 	}
@@ -162,6 +149,14 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 	if groupRelationDelete.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Group relation Missing",
+		})
+		return
+	}
+	groupDelete := initializers.DB.Delete(&group, GroupID)
+
+	if groupDelete.Error != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Group Missing",
 		})
 		return
 	}
