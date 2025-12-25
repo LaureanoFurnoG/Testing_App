@@ -18,11 +18,16 @@ func SetupRouter() *gin.Engine {
 		AllowOrigins:     []string{"http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization", "refresh-token"},
-    	ExposeHeaders:    []string{"Authorization", "Refresh-Token", "Content-Length"},
+		ExposeHeaders:    []string{"Authorization", "Refresh-Token", "Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
 	}))
 	
+	r.Use(func(c *gin.Context) {
+		c.Header("Access-Control-Expose-Headers", "Authorization")
+		c.Next()
+	})
+
 	api := r.Group("/api") //add all routes in /api
 	clientKC := keycloak.NewClientKeycloak()
 	mw := middlewere.NewMiddleware(clientKC)
@@ -30,6 +35,6 @@ func SetupRouter() *gin.Engine {
 	controllers.UserRoutes(api, handler, mw) //call the function in UserController to register the users routes
 	controllers.GroupsController(api, handler, mw)
 	controllers.TestsRoutes(api, handler, mw)
-	
+
 	return r // return the router
 }

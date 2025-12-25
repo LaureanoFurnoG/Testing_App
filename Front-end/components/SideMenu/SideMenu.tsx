@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import './SideMenu.css'
 import axiosInstance from '../../axios';
 import { useAuth } from '../../auth/AuthProvider';
+import { useGroups } from '../../context/GroupsContext';
 const { Sider } = Layout;
 interface Group{
   id: number;
@@ -22,6 +23,8 @@ const SideMenu: React.FC = () => {
   const [LocationApp, setLocationApp] = useState(['0'])
   const [Groups, setGroups] = useState<Group[]>([])
   const { isAuthenticated } = useAuth();
+  const { refreshKey } = useGroups();
+
   const location = useLocation();
   let navigate = useNavigate()
 
@@ -52,7 +55,7 @@ const SideMenu: React.FC = () => {
     if (isAuthenticated) {
       fetchAllGroups()
     }
-  }, [isAuthenticated])
+  }, [isAuthenticated, refreshKey])
 
   const fetchAllGroups = async () => {
     try {

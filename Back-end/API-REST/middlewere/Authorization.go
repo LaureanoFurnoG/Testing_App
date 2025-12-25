@@ -89,7 +89,7 @@ func (m Middleware) RequireAuth() gin.HandlerFunc {
 			false,
 			true,
 		)
-
+		c.Header("Access-Control-Expose-Headers", "Authorization")
 		c.Header("Authorization", "Bearer "+newToken.AccessToken)
 
 		c.Set("user_id", refreshSub)
