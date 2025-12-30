@@ -37,7 +37,7 @@ const GroupsManagement: React.FC = () => {
         <CreateGroupDrawer></CreateGroupDrawer>
       </div>
       <div className='cards-groups'>
-        {Groups.map(group =>(
+        {Groups?.map(group =>(
           <CardGroup Id={group.id} Name={group.name}/>
         ))}
       
