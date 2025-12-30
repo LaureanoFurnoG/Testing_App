@@ -40,16 +40,13 @@ func (m Middleware) RequireAuth() gin.HandlerFunc {
 
 		refreshToken, err := c.Cookie("refresh_token")
 		if err != nil || refreshToken == "" {
-
 			if !accessExpired {
+				c.Set("access_token", accessToken) // ✅
 				c.Set("user_id", accessSub)
 				c.Next()
 				return
 			}
-
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message": "Access expired and no refresh token",
-			})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Access expired and no refresh token"})
 			return
 		}
 
@@ -61,42 +58,33 @@ func (m Middleware) RequireAuth() gin.HandlerFunc {
 
 		if !accessExpired {
 			if accessSub != refreshSub {
-				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-					"message": "Access token does not belong to refresh token user",
-				})
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Token mismatch"})
 				return
 			}
-
+			c.Set("access_token", accessToken) // ✅
 			c.Set("user_id", accessSub)
 			c.Next()
 			return
 		}
 
+		// 🔁 REFRESH
 		newToken, err := m.client.RefreshToken(c.Request.Context(), refreshToken)
 		if err != nil {
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message": "Failed to refresh token",
-			})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to refresh token"})
 			return
 		}
 
-		c.SetCookie(
-			"refresh_token",
-			newToken.RefreshToken,
-			3600*24*30,
-			"/",
-			"localhost",
-			false,
-			true,
-		)
+		c.SetCookie("refresh_token", newToken.RefreshToken, 3600*24*30, "/", "localhost", false, true)
 		c.Header("Access-Control-Expose-Headers", "Authorization")
 		c.Header("Authorization", "Bearer "+newToken.AccessToken)
 
+		c.Set("access_token", newToken.AccessToken) 
 		c.Set("user_id", refreshSub)
 
 		c.Next()
 	}
 }
+
 
 func (m Middleware) BelongsGroup() gin.HandlerFunc {
 	return func(c *gin.Context) {

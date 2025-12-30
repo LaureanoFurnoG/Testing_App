@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
-	"strings"
 
 	"Go-API-T/initializers"
 	"Go-API-T/models"
@@ -179,16 +178,12 @@ func (h *HandlerAPI) TestEvent(c *gin.Context) {
 		return
 	}
 
-	accessHeader := c.GetHeader("Authorization")
-	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
-		c.Abort()
+	accessTokenAny, exists := c.Get("access_token")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Missing access token"})
 		return
 	}
-
-	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
-	accessToken = strings.TrimSpace(accessToken)
-	
+	accessToken := accessTokenAny.(string)
 	fmt.Println(accessToken)
 	testDriven(jsonDataRe, accessToken, c, h)
 
@@ -301,18 +296,10 @@ func saveDataTest(Id_Group int, values jsonData, accessToken string, c *gin.Cont
 }
 
 func (h *HandlerAPI) FindTest(c *gin.Context) {
-	var jsonDataRe struct {
-		Name string
-	}
+	Name := c.Query("name")
 
-	if c.ShouldBindJSON(&jsonDataRe) != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Failed to read body",
-		})
-		return
-	}
 	testS := []models.Backendtests{}
-	find := initializers.DB.Where("name LIKE ? AND Idgroup = ?", "%"+jsonDataRe.Name+"%", c.Param("groupId")).Find(&testS)
+	find := initializers.DB.Where("name LIKE ? AND Idgroup = ?", "%"+Name+"%", c.Param("groupId")).Find(&testS)
 
 	if find.Error != nil {
 		c.JSON(404, gin.H{
@@ -342,7 +329,12 @@ type TestsRequest struct {
 }
 
 func (h *HandlerAPI) RunAllEnd(c *gin.Context) {
-	accessToken := c.Request.Header.Get("Access-Token")
+	accessTokenAny, exists := c.Get("access_token")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Missing access token"})
+		return
+	}
+	accessToken := accessTokenAny.(string)
 
 	var req TestsRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

@@ -37,22 +37,13 @@ func (h *HandlerAPI) createGroup(c *gin.Context) {
 		})
 		return
 	}
-	
-	accessHeader := c.GetHeader("Authorization")
-	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
-		c.Abort()
-		return
-	}
-	if jsonData.Name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"message": "Missing the group name",
-		})
-		return
-	}
 
-	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
-	accessToken = strings.TrimSpace(accessToken)
+	accessTokenAny, exists := c.Get("access_token")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Missing access token"})
+		return
+	}
+	accessToken := accessTokenAny.(string)
 
 	groupID, err := h.clientKC.CreateGroup(c.Request.Context(), keycloak.CreateGroupParams{Name: jsonData.Name}, accessToken)
 
@@ -242,15 +233,12 @@ func (h *HandlerAPI) acceptInvitation(c *gin.Context) {
 		GroupID int
 	}
 
-	accessHeader := c.GetHeader("Authorization")
-	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
-		c.Abort()
+	accessTokenAny, exists := c.Get("access_token")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Missing access token"})
 		return
 	}
-
-	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
-	accessToken = strings.TrimSpace(accessToken)
+	accessToken := accessTokenAny.(string)
 
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -311,15 +299,12 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 		GroupID int
 	}
 
-	accessHeader := c.GetHeader("Authorization")
-	if accessHeader == "" || !strings.HasPrefix(accessHeader, "Bearer ") {
-		c.JSON(http.StatusUnauthorized, gin.H{"message": "Access token not found or invalid format"})
-		c.Abort()
+	accessTokenAny, exists := c.Get("access_token")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Missing access token"})
 		return
 	}
-
-	accessToken := strings.TrimPrefix(accessHeader, "Bearer ")
-	accessToken = strings.TrimSpace(accessToken)
+	accessToken := accessTokenAny.(string)
 
 	if c.ShouldBindJSON(&jsonData) != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
