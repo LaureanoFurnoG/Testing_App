@@ -70,7 +70,7 @@ const GroupData: React.FC = () => {
           <Search placeholder="input search endpoint" onSearch={onSearch} className='searchEndpoint' />
         </div>
         <div>
-          {tests.map(test =>{
+          {tests?.map(test =>{
             return(
             <CollapseCard
               key={test.ID}
@@ -97,7 +97,7 @@ const GroupData: React.FC = () => {
         </div>
       </div>
       <div className='Users-table'>
-        <TableUsers_Group URL='al'/>
+        <TableUsers_Group />
       </div>
     </div>
     

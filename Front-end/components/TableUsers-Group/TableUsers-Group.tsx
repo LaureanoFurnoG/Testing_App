@@ -1,104 +1,94 @@
 import "./style.css";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import axiosInstance from "../../axios";
-import { Divider, Table, type GetProps } from "antd";
-import { Input, type TableColumnsType } from "antd";
+import { Divider, Table, Input } from "antd";
+import type { TableColumnsType } from "antd";
 import { DeleteOutlined } from "@ant-design/icons";
 import AddUserDrawer from "../AddUser-Drawer/AddUser-Drawer";
+import { useParams } from "react-router-dom";
 
 const { Search } = Input;
 
-type SearchProps = GetProps<typeof Input.Search>;
-
 interface DataType {
   key: React.Key;
-  User: any;
-  delete: any;
+  User: React.ReactNode;
 }
 
-interface TableUsers_GroupProps {
-  URL: string;
-}
+export default function TableUsers_Group() {
+  const { groupId } = useParams();
+  const [data, setData] = useState<DataType[]>([]);
 
-interface TableUsers_GroupState {
-  data: DataType[];
-}
-
-export default class TableUsers_Group extends React.Component<
-  TableUsers_GroupProps,
-  TableUsers_GroupState
-> {
-  constructor(props: TableUsers_GroupProps) {
-    super(props);
-
-    this.state = {
-      data: [
-        {
-          key: "1",
-          User: (
-            <div className="profileData">
-              <img src="" className="ProfileImage" alt="" />
-              <p>Name</p>
-            </div>
-          ),
-          delete: true,
-        },
-      ],
-    };
-  }
-
-  onSearch: SearchProps["onSearch"] = (value, _e, info) => {
-    console.log(info?.source, value);
-  };
-
-  deleteUser = (key: React.Key): void => {
+  const deleteUser = (key: React.Key) => {
     console.log("Delete:", key);
   };
 
-  render() {
-    const columns: TableColumnsType<DataType> = [
-      {
-        title: "User",
-        dataIndex: "User",
-      },
-      {
-        title: "Delete",
-        dataIndex: "delete",
-        render: (_, record) => (
-          <div className="deleteCell">
-            <DeleteOutlined
-              className="deleteUser-icon"
-              onClick={() => this.deleteUser(record.key)}
-            />
-          </div>
-        ),
-      },
-    ];
+  const getMembers = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/api/group/showAllUsersGroup/${groupId}`
+      );
 
-    return (
-      <div>
-        <div className="headerUsers">
-          <span className="headerTitle">User</span>
+      const formattedData = response.data.groupMembers?.map(
+        (user: any) => ({
+          key: user.id,
+          User: (
+            <div className="profileData">
+              <img src={user.avatar || ""} className="ProfileImage" alt="" />
+              <p>{user.name}</p>
+            </div>
+          ),
+        })
+      );
 
-          <div className="headerActions">
-            <AddUserDrawer />
+      setData(formattedData);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-            <Search
-              placeholder="Search user by Name"
-              onSearch={this.onSearch}
-              className="searchUser"
-            />
-          </div>
+  useEffect(() => {
+    getMembers();
+  }, []);
+
+  const columns: TableColumnsType<DataType> = [
+    {
+      title: "User",
+      dataIndex: "User",
+    },
+    {
+      title: "Delete",
+      render: (_, record) => (
+        <div className="deleteCell">
+          <DeleteOutlined
+            className="deleteUser-icon"
+            onClick={() => deleteUser(record.key)}
+          />
         </div>
+      ),
+    },
+  ];
 
-        <Divider className="divider" />
+  return (
+    <div>
+      <div className="headerUsers">
+        <span className="headerTitle">User</span>
 
-        <Table<DataType>
-          columns={columns}
-          dataSource={this.state.data}
-          showHeader={false}
-        />
+        <div className="headerActions">
+          <AddUserDrawer />
+          <Search
+            placeholder="Search user by Name"
+            className="searchUser"
+          />
+        </div>
       </div>
-    );
-  }
+
+      <Divider className="divider" />
+
+      <Table
+        columns={columns}
+        dataSource={data}
+        showHeader={false}
+      />
+    </div>
+  );
 }

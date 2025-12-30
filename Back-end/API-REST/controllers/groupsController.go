@@ -17,6 +17,8 @@ func GroupsController(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.M
 
 	group.POST("/createGroup", mw.RequireAuth(), handler.createGroup)
 	group.POST("/inviteGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.inviteGroup)
+	group.GET("/showAllUsersGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.ShowAllUsersGroup)
+
 	group.PATCH("/acceptInvitation", mw.RequireAuth(), handler.acceptInvitation)
 	group.DELETE("/declineGroup", mw.RequireAuth(), handler.declineGroup)
 
@@ -326,7 +328,7 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 	userFind := initializers.DB.First(&userF, "keycloak_id = ?", userKeycloak.ID)
 
 	if userFind.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusForbidden, gin.H{
 			"error": "User Missing",
 		})
 		return
@@ -338,7 +340,7 @@ func (h *HandlerAPI) declineGroup(c *gin.Context) {
 	groupFound := initializers.DB.First(&group, "id = ?", jsonData.GroupID)
 
 	if groupFound.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusForbidden, gin.H{
 			"error": "Group Missing",
 		})
 		return
@@ -402,5 +404,35 @@ func (h *HandlerAPI) showAllGroups(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"Groups": groups,
+	})
+}
+
+func (h *HandlerAPI) ShowAllUsersGroup(c *gin.Context) {
+	GroupID, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to parse groupId",
+		})
+		return
+	}
+
+	var groupData models.Groups
+	groupFind := initializers.DB.Where("id = ?", GroupID).First(&groupData)
+	if groupFind.Error != nil {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Group Missing",
+		})
+		return
+	}
+
+	groupMembers, err := h.clientKC.GetUsersGroup(c.Request.Context(), groupData.KeycloakID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Keycloak issue",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"groupMembers": groupMembers,
 	})
 }
