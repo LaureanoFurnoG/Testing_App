@@ -24,17 +24,18 @@ const CardGroup: React.FC<CardGroupProps> = ({Id, Name }) => {
         console.log(error)
       }
     }
+    
     return (
     <>
-        <div id={Id.toString()}  className='ContainerGroupCard'>
-          <div className='container-data'>
-            <h2>{Name}</h2>
-            <div className='Buttons-CardGroup'>
-              <button className='open-button'>Open</button>
-              <button className='delete-button' onClick={() => DeleteGroup(Id)}>Delete</button>
-            </div>
+      <div id={Id.toString()}  className='ContainerGroupCard'>
+        <div className='container-data'>
+          <h2>{Name}</h2>
+          <div className='Buttons-CardGroup'>
+            <button className='open-button'>Open</button>
+            <button className='delete-button' onClick={() => DeleteGroup(Id)}>Delete</button>
           </div>
         </div>
+      </div>
     </>
     );
 };

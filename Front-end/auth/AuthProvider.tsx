@@ -53,7 +53,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   useEffect(() => {
-    console.log('Token actualizado:', token?.access_token);
   }, [token]);
 
   const isAuthenticated = Boolean(token?.access_token);

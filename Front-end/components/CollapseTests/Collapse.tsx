@@ -15,10 +15,12 @@ interface CollapseCardProps  {
   Type: string;
   HTTPResult: number;
   urlEndpoint: string;
+  RequestData:Record<string, any>;
+  ResponseData: JSON | null;
 } 
 const { TextArea } = Input;
 
-const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Type, HTTPResult, urlEndpoint }) => {
+const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Type, HTTPResult, urlEndpoint, RequestData, ResponseData }) => {
 
   const CustomHeader = () => (
     <div className='ContainerHeader-Custom' id={Id}>
@@ -45,7 +47,10 @@ const CollapseCard: React.FC<CollapseCardProps> = ({Id, Name, Type, HTTPResult, 
     console.log(`selected ${value}`);
   };
 
-  const [value, setValue] = useState('');
+  const [value, setValue] = useState<string>(
+    JSON.stringify(RequestData, null, 2)
+  );
+
   const [Placeholder, _] = useState(`{
   "Name": "Example",
   "Password": "example"
