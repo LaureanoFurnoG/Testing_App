@@ -302,3 +302,18 @@ func (c *ClientKeycloak) GetGroups(ctx context.Context, accessToken, userID stri
 	}
 	return groups, nil
 }
+
+func (c *ClientKeycloak) GetUsersGroup(ctx context.Context, groupID string) ([]*gocloak.User, error) {
+	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
+
+	if err != nil {
+		return nil, err
+	}
+
+	groupMembers, err := c.kc.GetGroupMembers(ctx, jwt.AccessToken, c.realm, groupID, gocloak.GetGroupsParams{})
+	if err != nil {
+		return nil, err
+	}
+
+	return groupMembers, nil
+}
