@@ -112,7 +112,7 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 		return
 	}
 	var group models.Groups
-	var GroupsRelation models.GroupsRelation
+	var GroupsRelation []models.GroupsRelation
 
 	groupFound := initializers.DB.First(&group, "id = ?", GroupID)
 
@@ -123,7 +123,7 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 		return
 	}
 
-	groupRleatioNFound := initializers.DB.First(&GroupsRelation, "idgroup = ?", GroupID)
+	groupRleatioNFound := initializers.DB.Delete(&GroupsRelation, "idgroup = ?", GroupID)
 
 	if groupRleatioNFound.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -137,14 +137,6 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": err,
-		})
-		return
-	}
-	
-	groupRelationDelete := initializers.DB.Delete(&GroupsRelation, GroupsRelation.ID)
-	if groupRelationDelete.Error != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Group relation Missing",
 		})
 		return
 	}
