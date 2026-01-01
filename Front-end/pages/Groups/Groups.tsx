@@ -5,6 +5,7 @@ import axiosInstance from '../../axios';
 import CreateGroupDrawer from '../../components/CreateGroup-Drawer/CreateGroup-Drawer'
 import { useAuth } from '../../auth/AuthProvider';
 import { useGroups } from '../../context/GroupsContext';
+import InvitationPanel from '../../components/InvitationPanel/InvitationPanel';
 interface Group{
   id: number;
   name: string;
@@ -40,8 +41,8 @@ const GroupsManagement: React.FC = () => {
         {Groups?.map(group =>(
           <CardGroup Id={group.id} Name={group.name}/>
         ))}
-      
       </div>
+      <InvitationPanel></InvitationPanel>
     </div>
   );
 };
