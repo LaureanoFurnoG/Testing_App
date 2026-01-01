@@ -5,10 +5,12 @@ import (
 	"Go-API-T/initializers"
 	"Go-API-T/middlewere"
 	"Go-API-T/models"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/Nerzal/gocloak/v13"
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,6 +20,7 @@ func GroupsController(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.M
 	group.POST("/createGroup", mw.RequireAuth(), handler.createGroup)
 	group.POST("/inviteGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.inviteGroup)
 	group.GET("/showAllUsersGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.ShowAllUsersGroup)
+	group.GET("/showInvitationGroups", mw.RequireAuth(), handler.ShowInvitationGroups)
 
 	group.PATCH("/acceptInvitation", mw.RequireAuth(), handler.acceptInvitation)
 	group.DELETE("/declineGroup", mw.RequireAuth(), handler.declineGroup)
@@ -137,16 +140,16 @@ func (h *HandlerAPI) deleteGroup(c *gin.Context) {
 		})
 		return
 	}
+	
 	groupRelationDelete := initializers.DB.Delete(&GroupsRelation, GroupsRelation.ID)
-
 	if groupRelationDelete.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Group relation Missing",
 		})
 		return
 	}
-	groupDelete := initializers.DB.Delete(&group, GroupID)
 
+	groupDelete := initializers.DB.Delete(&group, GroupID)
 	if groupDelete.Error != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "Group Missing",
@@ -290,7 +293,20 @@ func (h *HandlerAPI) acceptInvitation(c *gin.Context) {
 		})
 		return
 	}
-
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "user not authenticated",
+		})
+		return
+	}
+	err = h.clientKC.InviteGroups(c.Request.Context(), fmt.Sprint(userID), group.KeycloakID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"message": "error at add the user in the keycloak group",
+		})
+		return
+	}
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "Group invitation accepted successfully",
 	})
@@ -377,7 +393,7 @@ func (h *HandlerAPI) showAllGroups(c *gin.Context) {
 		return
 	}
 
-	userKeycloakGroups, err := h.clientKC.GetGroups(c.Request.Context(), "", userID.(string))
+	userKeycloakGroups, err := h.clientKC.GetGroups(c.Request.Context(), userID.(string))
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": err,
@@ -406,7 +422,6 @@ func (h *HandlerAPI) showAllGroups(c *gin.Context) {
 		"Groups": groups,
 	})
 }
-
 func (h *HandlerAPI) ShowAllUsersGroup(c *gin.Context) {
 	GroupID, err := strconv.Atoi(c.Param("groupId"))
 	if err != nil {
@@ -434,5 +449,81 @@ func (h *HandlerAPI) ShowAllUsersGroup(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"groupMembers": groupMembers,
+	})
+}
+
+type GroupData struct {
+	Id   int
+	Name string
+}
+
+func (h *HandlerAPI) ShowInvitationGroups(c *gin.Context) {
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"message": "user not authenticated",
+		})
+		return
+	}
+	//get user
+	var user models.Users
+	userData := initializers.DB.Where("keycloak_id = ?", userID).Find(&user)
+	if userData.Error != nil {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Error retrieving user data",
+		})
+		return
+	}
+	//search invitations
+	var groupsRelation []models.GroupsRelation
+	invitationFound := initializers.DB.Where("iduser = ? AND accepted = ?", user.ID, false).Find(&groupsRelation)
+	if invitationFound.Error != nil {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Error retrieving invitation data",
+		})
+		return
+	}
+	//save groupsID
+	var groupIDs []int
+	for _, gr := range groupsRelation {
+		groupIDs = append(groupIDs, gr.Idgroup)
+	}
+	//search groups data DB
+	var groupsInvitation []models.Groups
+	err := initializers.DB.
+		Where("id IN ?", groupIDs).
+		Find(&groupsInvitation).Error
+	if err != nil {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Error getting group data",
+		})
+		return
+	}
+
+	//search group keycloak data
+	var groupKeycloakData []gocloak.Group
+	for i := 0; i < len(groupIDs); i++ {
+		groupData, err := h.clientKC.GetGroupsByID(c.Request.Context(), groupsInvitation[i].KeycloakID)
+		if err != nil {
+			c.JSON(http.StatusForbidden, gin.H{
+				"error": "Error getting group data of keycloak",
+			})
+			return
+		}
+		groupKeycloakData = append(groupKeycloakData, *groupData)
+	}
+
+	groupData := make([]GroupData, len(groupsInvitation))
+	fmt.Println(groupsInvitation)
+	for i := 0; i < len(groupsInvitation); i++ {
+		groupData[i].Id = groupsInvitation[i].ID
+
+		if i < len(groupKeycloakData) && groupKeycloakData[i].Name != nil {
+			groupData[i].Name = strings.Split(*groupKeycloakData[i].Name, "-")[0]
+		}
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"groupsInvitation": groupData,
 	})
 }

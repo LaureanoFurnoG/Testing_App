@@ -263,23 +263,13 @@ type InviteGroupsParams struct {
 	GroupIDKeycloak string
 }
 
-func (c *ClientKeycloak) InviteGroups(ctx context.Context, params InviteGroupsParams, idUser, groupID string) (error error) {
+func (c *ClientKeycloak) InviteGroups(ctx context.Context, idUser, groupID string) (error error) {
 	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
 	if err != nil {
 		return err
 	}
 
-	userInfo, err := c.kc.GetUserInfo(ctx, idUser, c.realm)
-
-	if err != nil {
-		return err
-	}
-
-	if userInfo.Sub == nil {
-		return fmt.Errorf("userInfo.Sub is nil")
-	}
-
-	err = c.kc.AddUserToGroup(ctx, jwt.AccessToken, c.realm, *userInfo.Sub, groupID)
+	err = c.kc.AddUserToGroup(ctx, jwt.AccessToken, c.realm, idUser, groupID)
 
 	if err != nil {
 		return err
@@ -288,7 +278,7 @@ func (c *ClientKeycloak) InviteGroups(ctx context.Context, params InviteGroupsPa
 	return nil
 }
 
-func (c *ClientKeycloak) GetGroups(ctx context.Context, accessToken, userID string) ([]*gocloak.Group, error) {
+func (c *ClientKeycloak) GetGroups(ctx context.Context, userID string) ([]*gocloak.Group, error) {
 	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
 
 	if err != nil {
@@ -296,6 +286,21 @@ func (c *ClientKeycloak) GetGroups(ctx context.Context, accessToken, userID stri
 	}
 
 	groups, err := c.kc.GetUserGroups(ctx, jwt.AccessToken, c.realm, userID, gocloak.GetGroupsParams{})
+
+	if err != nil {
+		return nil, err
+	}
+	return groups, nil
+}
+
+func (c *ClientKeycloak) GetGroupsByID(ctx context.Context, idGroup string) (*gocloak.Group, error) {
+	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
+
+	if err != nil {
+		return nil, err
+	}
+
+	groups, err := c.kc.GetGroup(ctx, jwt.AccessToken, c.realm, idGroup)
 
 	if err != nil {
 		return nil, err

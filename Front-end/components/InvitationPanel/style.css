@@ -1,0 +1,33 @@
+.Invitations-table-container {
+  background-color: white;
+  margin-top: 50px;
+  padding: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.164);
+}
+
+.text-title-inv {
+  color: black;
+  margin: 20px;
+}
+
+.accept-btn {
+  background-color: #58bd9f;
+  font-size: 17px;
+}
+.decline-btn {
+  background-color: red;
+  font-size: 17px;
+}
+.decline-btn:hover {
+  background-color: rgb(100, 1, 1) !important;
+}
+.accept-btn:hover {
+  background-color: #368069 !important;
+}
+.ant-table-cell:has(.acceptCell) {
+  width: 30px;
+}
+
+.GroupData p {
+  margin: 0;
+}
