@@ -39,7 +39,6 @@ export default function TableUsers_Group() {
           ),
         })
       );
-
       setData(formattedData);
     } catch (error) {
       console.error(error);
@@ -48,7 +47,7 @@ export default function TableUsers_Group() {
 
   useEffect(() => {
     getMembers();
-  }, []);
+  }, [groupId]);
 
   const columns: TableColumnsType<DataType> = [
     {

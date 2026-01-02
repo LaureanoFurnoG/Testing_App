@@ -45,7 +45,6 @@ const GroupData: React.FC = () => {
         params: { name: search }
       })
       setTest(response.data.Group)
-      console.log(response.data.Group)
     }catch(error){
       console.log(error)
     }
@@ -53,7 +52,7 @@ const GroupData: React.FC = () => {
 
   useEffect(() =>{
     getTests()
-  },[search])
+  },[search, groupId])
   return (
     <div className='container-group'>
       <h2 className='Group_Name'>G_Name</h2>
