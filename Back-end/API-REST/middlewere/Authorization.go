@@ -91,8 +91,6 @@ func (m Middleware) BelongsGroup() gin.HandlerFunc {
 		groupId := c.Param("groupId")
 		profileCookie, cookieErr := c.Cookie("profile")
 		if cookieErr != nil || profileCookie == "" {
-			fmt.Println(cookieErr)
-			fmt.Println("cook", profileCookie)
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"message": "You don't have profile cookie",
 			})

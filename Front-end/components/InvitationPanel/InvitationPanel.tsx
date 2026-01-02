@@ -35,7 +35,13 @@ const InvitationPanel: React.FC = () => {
 
     const decline = async (key: React.Key) => {
         try{
-            
+            await axiosInstance.delete("/api/group/declineGroup",  {
+              data: {
+                GroupID: key
+              }
+            })
+            setAction(!Action)
+           refreshGroups()
         }catch(error){
             console.log(error)
         }
