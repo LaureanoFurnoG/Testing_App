@@ -41,7 +41,7 @@ func (m Middleware) RequireAuth() gin.HandlerFunc {
 		refreshToken, err := c.Cookie("refresh_token")
 		if err != nil || refreshToken == "" {
 			if !accessExpired {
-				c.Set("access_token", accessToken) // ✅
+				c.Set("access_token", accessToken)
 				c.Set("user_id", accessSub)
 				c.Next()
 				return
@@ -61,13 +61,12 @@ func (m Middleware) RequireAuth() gin.HandlerFunc {
 				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Token mismatch"})
 				return
 			}
-			c.Set("access_token", accessToken) // ✅
+			c.Set("access_token", accessToken)
 			c.Set("user_id", accessSub)
 			c.Next()
 			return
 		}
 
-		// 🔁 REFRESH
 		newToken, err := m.client.RefreshToken(c.Request.Context(), refreshToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Failed to refresh token"})

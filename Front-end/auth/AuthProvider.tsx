@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect,  Dispatch, SetStateAction} from 'react';
 
 interface TokenProfile {
   acr: string;
@@ -7,6 +7,7 @@ interface TokenProfile {
   azp: string;
   email: string;
   email_verified: boolean;
+  lastname: string;
   exp: number;
   family_name: string;
   given_name: string;
@@ -27,7 +28,7 @@ interface TokenType {
 
 interface AuthContextType {
   token: TokenType | null;
-  setToken: (token: TokenType) => void;
+  setToken: Dispatch<SetStateAction<TokenType | null>>;
   logout: () => void;
   isAuthenticated: boolean;
 }
@@ -40,10 +41,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return stored ? JSON.parse(stored) : null;
   });
 
-  const setToken = (t: TokenType) => {
-    setTokenState(t);
-    sessionStorage.setItem('Token', JSON.stringify(t));
+  const setToken: AuthContextType['setToken'] = (value) => {
+    setTokenState(prev => {
+      const next = typeof value === 'function' ? value(prev) : value;
+      if (next) {
+        sessionStorage.setItem('Token', JSON.stringify(next));
+      } else {
+        sessionStorage.removeItem('Token');
+      }
+      return next;
+    });
   };
+
 
   const logout = () => {
     //setTokenState(null);

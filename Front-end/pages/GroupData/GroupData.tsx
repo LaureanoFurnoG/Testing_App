@@ -31,12 +31,12 @@ interface BackendTest {
   Request: Record<string, any>;
 }
 
-
 const GroupData: React.FC = () => {
   const onSearch: SearchProps['onSearch'] = (value, _e, info) => setSearchEndpoint(value);
   const [search, setSearchEndpoint] = useState("")
   const { groupId } = useParams(); 
   const [frontUrl, setFrontUrl] = useState("")
+  const [groupName, setGroupName] = useState()
   const [url, setUrl] = useState("")
   const [tests, setTest] = useState<BackendTest[]>([])
   const getTests = async () => {
@@ -49,13 +49,27 @@ const GroupData: React.FC = () => {
       console.log(error)
     }
   }
+  
+  const getGroupData = async () =>{
+    try{
+      const response = await axiosInstance.get(`/api/group/showGroupData/${groupId}`)
+      setGroupName(response.data.GroupData.attributes.displayName)
+    }catch(error){
+      console.log(error)
+    }
+  }
 
+  useEffect(() =>{
+    getGroupData()
+  }, [groupId])
+  
   useEffect(() =>{
     getTests()
   },[search, groupId])
+
   return (
     <div className='container-group'>
-      <h2 className='Group_Name'>G_Name</h2>
+      <h2 className='Group_Name'>{groupName}</h2>
       <Space.Compact className='inputEndpoint'>
         <Input placeholder='API URL' />
         <AddEndpoint />

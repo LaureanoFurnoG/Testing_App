@@ -21,6 +21,7 @@ func GroupsController(rg *gin.RouterGroup, handler *HandlerAPI, mw *middlewere.M
 	group.POST("/inviteGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.inviteGroup)
 	group.GET("/showAllUsersGroup/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.ShowAllUsersGroup)
 	group.GET("/showInvitationGroups", mw.RequireAuth(), handler.ShowInvitationGroups)
+	group.GET("/showGroupData/:groupId", mw.RequireAuth(), mw.BelongsGroup(), handler.showGroupData)
 
 	group.PATCH("/acceptInvitation", mw.RequireAuth(), handler.acceptInvitation)
 	group.DELETE("/declineGroup", mw.RequireAuth(), handler.declineGroup)
@@ -517,5 +518,36 @@ func (h *HandlerAPI) ShowInvitationGroups(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"groupsInvitation": groupData,
+	})
+}
+
+func (h *HandlerAPI) showGroupData(c *gin.Context) {
+	GroupID, err := strconv.Atoi(c.Param("groupId"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "Failed to parse groupId",
+		})
+		return
+	}
+
+	var groupData models.Groups
+	groupFind := initializers.DB.Where("id = ?", GroupID).First(&groupData)
+	if groupFind.Error != nil {
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Group Missing",
+		})
+		return
+	}
+
+	GroupKeycloakData, err := h.clientKC.GetGroupData(c.Request.Context(), groupData.KeycloakID)
+	if err != nil{
+		c.JSON(http.StatusForbidden, gin.H{
+			"error": "Group missing in keycloak",
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"GroupData": GroupKeycloakData,
 	})
 }
