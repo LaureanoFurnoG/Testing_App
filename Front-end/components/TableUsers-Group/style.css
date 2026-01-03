@@ -79,7 +79,10 @@
   cursor: pointer;
   transition: 0.2s;
 }
-
+.profileData .full-name{
+  font-weight: bold;
+  margin-right: 70px;
+}
 .deleteUser-icon:hover {
   opacity: 0.7;
 }

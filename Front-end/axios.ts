@@ -20,10 +20,13 @@ export const setupInterceptors = (auth: ReturnType<typeof useAuth>) => {
     const authHeader = response.headers['authorization'];
 
     if (authHeader?.startsWith('Bearer ')) {
-      auth.setToken({
+    auth.setToken(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
         access_token: authHeader.slice(7),
-        profile: auth.token?.profile
-      });
+      };
+    });
     }
 
     return response;

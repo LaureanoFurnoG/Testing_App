@@ -27,14 +27,14 @@ export default function TableUsers_Group() {
       const response = await axiosInstance.get(
         `/api/group/showAllUsersGroup/${groupId}`
       );
-
       const formattedData = response.data.groupMembers?.map(
         (user: any) => ({
           key: user.id,
           User: (
             <div className="profileData">
               <img src={user.avatar || ""} className="ProfileImage" alt="" />
-              <p>{user.name}</p>
+              <p className="full-name">{user.firstName + " "+ user.lastName}</p>
+              <p>{user.email}</p>
             </div>
           ),
         })

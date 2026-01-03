@@ -27,6 +27,8 @@ type Profile struct {
 	At_hash        string
 	Aud            string
 	Azp            string
+	Given_name     string
+	Family_name    string
 	Email          string
 	Email_verified bool
 	Exp            int
@@ -90,7 +92,7 @@ func (c *ClientKeycloak) CreateUser(ctx context.Context, params CreateUserParams
 	}
 
 	newUser := gocloak.User{
-		Username:  gocloak.StringP(params.Email), // usar el email como username
+		Username:  gocloak.StringP(params.Email),
 		Email:     gocloak.StringP(params.Email),
 		FirstName: gocloak.StringP(params.Name),
 		LastName:  gocloak.StringP(params.Lastname),
@@ -321,4 +323,19 @@ func (c *ClientKeycloak) GetUsersGroup(ctx context.Context, groupID string) ([]*
 	}
 
 	return groupMembers, nil
+}
+
+func (c *ClientKeycloak) GetGroupData(ctx context.Context, groupID string)(*gocloak.Group, error){
+	jwt, err := c.kc.LoginAdmin(ctx, c.userAdmin, c.pwdAdmin, c.realmAdmin)
+
+	if err != nil{
+		return nil, err
+	}
+
+	groupData, err := c.kc.GetGroup(ctx, jwt.AccessToken, c.realm, groupID)
+	if err != nil{
+		return nil, err
+	}
+
+	return groupData, nil
 }
